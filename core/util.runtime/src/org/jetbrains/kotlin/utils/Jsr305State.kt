@@ -16,23 +16,77 @@
 
 package org.jetbrains.kotlin.utils
 
-enum class Jsr305State(
-        val description: String,
-        val shouldReportWarning: Boolean = false,
-        val shouldReportError: Boolean = false
-) {
+enum class ReportLevel(val description: String) {
     IGNORE("ignore"),
-    WARN("warn", shouldReportWarning = true),
-    STRICT("strict", shouldReportError = true),
+    WARN("warn"),
+    STRICT("strict")
     ;
 
     companion object {
-        @JvmField
-        val DEFAULT: Jsr305State = IGNORE
-
-        fun findByDescription(description: String?) = values().firstOrNull { it.description == description }
+        fun findByDescription(description: String?): ReportLevel? = values().firstOrNull { it.description == description }
     }
 
-    fun isIgnored(): Boolean = this == IGNORE
-    fun isWarning(): Boolean = this == WARN
+    val isWarning: Boolean get() = this == ReportLevel.WARN
+    val isIgnore: Boolean get() = this == ReportLevel.IGNORE
 }
+
+data class Jsr305State(
+        val global: ReportLevel,
+        val migration: ReportLevel?,
+        val user: Map<String, ReportLevel>
+) {
+    val description: Array<String> by lazy {
+        val result = mutableListOf<String>()
+        result.add(global.description)
+
+        migration?.let { result.add("under-migration:${it.description}") }
+
+        user.forEach {
+            result.add("@${it.key}:${it.value.description}")
+        }
+
+        result.toTypedArray()
+    }
+
+    val disabled: Boolean get() = this === DISABLED
+
+    companion object {
+        @JvmField
+        val DEFAULT: Jsr305State = Jsr305State(ReportLevel.WARN, null, emptyMap())
+
+        @JvmField
+        val DISABLED: Jsr305State = Jsr305State(ReportLevel.IGNORE, ReportLevel.IGNORE, emptyMap())
+
+        @JvmField
+        val STRICT: Jsr305State = Jsr305State(ReportLevel.STRICT, ReportLevel.STRICT, emptyMap())
+
+        fun fromArgs(args: Array<String>?): Jsr305State {
+            var global: ReportLevel = ReportLevel.WARN
+            var migration: ReportLevel? = null
+            val userDefined = mutableMapOf<String, ReportLevel>()
+
+            args?.forEach { item ->
+                when {
+                    item.startsWith("@") -> {
+                        val (name, rawState) = item.substring(1).split(":").takeIf { it.size == 2 } ?: return@forEach
+                        val state = ReportLevel.findByDescription(rawState) ?: return@forEach
+                        userDefined[name] = state
+                    }
+                    item.startsWith("under-migration") -> {
+                        val (_, rawState) = item.split(":").takeIf { it.size == 2 } ?: return@forEach
+                        val state = ReportLevel.findByDescription(rawState) ?: return@forEach
+                        migration = state
+                    }
+                    else -> {
+                        global = ReportLevel.findByDescription(item) ?: return@forEach
+                    }
+                }
+            }
+
+            val result = Jsr305State(global, migration, userDefined)
+            return if (result == DISABLED) DISABLED else result
+        }
+
+    }
+}
+

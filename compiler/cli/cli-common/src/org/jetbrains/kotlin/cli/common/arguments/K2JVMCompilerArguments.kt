@@ -162,19 +162,22 @@ class K2JVMCompilerArguments : CommonCompilerArguments() {
 
     @Argument(
             value = "-Xjsr305",
-            valueDescription = "{ignore|strict|warn}",
-            description = "Specify global behavior for JSR-305 nullability annotations: ignore, treat as other supported nullability annotations, or report a warning"
+            valueDescription = "{ignore|strict|warn}" +
+                               "|under-migration:{ignore-strict-warn}" +
+                               "|@<fully qualified class name>:{ignore|strict|warn}",
+            description = "Specify behaviors for JSR-305 nullability annotations for: " +
+                          "global, annotated with @UnderMigration or custom annotation " +
+                          "with specific value: ignore, treat as other supported nullability annotations, or report a warning." +
+                          "Note that strict value is experimental yet"
     )
-    var jsr305: String? by FreezableVar(Jsr305State.DEFAULT.description)
+    var jsr305: Array<String>? by FreezableVar(null)
 
     // Paths to output directories for friend modules.
     var friendPaths: Array<String>? by FreezableVar(null)
 
     override fun configureAnalysisFlags(): MutableMap<AnalysisFlag<*>, Any> {
         val result = super.configureAnalysisFlags()
-        Jsr305State.findByDescription(jsr305)?.let {
-            result.put(AnalysisFlag.jsr305, it)
-        }
+        result[AnalysisFlag.jsr305] = Jsr305State.fromArgs(jsr305)
         return result
     }
 }

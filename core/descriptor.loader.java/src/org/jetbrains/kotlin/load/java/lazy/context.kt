@@ -28,12 +28,10 @@ import org.jetbrains.kotlin.load.java.lazy.types.JavaTypeResolver
 import org.jetbrains.kotlin.load.java.sources.JavaSourceElementFactory
 import org.jetbrains.kotlin.load.java.structure.JavaTypeParameterListOwner
 import org.jetbrains.kotlin.load.java.typeEnhancement.JavaTypeQualifiers
-import org.jetbrains.kotlin.load.java.typeEnhancement.NullabilityQualifier
 import org.jetbrains.kotlin.load.java.typeEnhancement.NullabilityQualifierWithMigrationStatus
 import org.jetbrains.kotlin.load.java.typeEnhancement.SignatureEnhancement
 import org.jetbrains.kotlin.load.kotlin.DeserializedDescriptorResolver
 import org.jetbrains.kotlin.load.kotlin.KotlinClassFinder
-import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.serialization.deserialization.ErrorReporter
 import org.jetbrains.kotlin.storage.StorageManager
 import java.util.*
@@ -122,10 +120,9 @@ fun LazyJavaResolverContext.computeNewDefaultTypeQualifiers(
             ?: QualifierByApplicabilityType(AnnotationTypeQualifierResolver.QualifierApplicabilityType::class.java)
 
     var wasUpdate = false
-    val isForWarning = components.annotationTypeQualifierResolver.jsr305State.isWarning()
     for ((nullability, applicableTo) in nullabilityQualifiersWithApplicability) {
         for (applicabilityType in applicableTo) {
-            nullabilityQualifiersByType[applicabilityType] = NullabilityQualifierWithMigrationStatus(nullability, isForWarning)
+            nullabilityQualifiersByType[applicabilityType] = nullability
             wasUpdate = true
         }
     }
@@ -136,33 +133,27 @@ fun LazyJavaResolverContext.computeNewDefaultTypeQualifiers(
 private fun LazyJavaResolverContext.extractDefaultNullabilityQualifier(
         annotationDescriptor: AnnotationDescriptor
 ): NullabilityQualifierWithApplicability? {
-    BUILT_IN_TYPE_QUALIFIER_DEFAULT_ANNOTATIONS[annotationDescriptor.fqName]?.let { return it }
+    val typeQualifierResolver = components.annotationTypeQualifierResolver
+    typeQualifierResolver.resolveQualifierBuiltInDefaultAnnotation(annotationDescriptor)?.let { return it }
 
     val (typeQualifier, applicability) =
-            components.annotationTypeQualifierResolver.resolveTypeQualifierDefaultAnnotation(annotationDescriptor)
+            typeQualifierResolver.resolveTypeQualifierDefaultAnnotation(annotationDescriptor)
             ?: return null
 
-    val nullabilityQualifier = components.signatureEnhancement.extractNullability(typeQualifier)?.qualifier ?: return null
+    val jsr305State = typeQualifierResolver.resolveJsr305AnnotationState(typeQualifier)
+    val nullabilityQualifier =
+            components
+                    .signatureEnhancement
+                    .extractNullability(typeQualifier)
+                    ?.copy(isForWarningOnly = jsr305State.isWarning)
+            ?: return null
 
     return NullabilityQualifierWithApplicability(nullabilityQualifier, applicability)
 }
 
 data class NullabilityQualifierWithApplicability(
-        val nullabilityQualifier: NullabilityQualifier,
+        val nullabilityQualifier: NullabilityQualifierWithMigrationStatus,
         val qualifierApplicabilityTypes: Collection<AnnotationTypeQualifierResolver.QualifierApplicabilityType>
-)
-
-private val BUILT_IN_TYPE_QUALIFIER_DEFAULT_ANNOTATIONS = mapOf(
-        FqName("javax.annotation.ParametersAreNullableByDefault") to
-                NullabilityQualifierWithApplicability(
-                        NullabilityQualifier.NULLABLE,
-                        listOf(AnnotationTypeQualifierResolver.QualifierApplicabilityType.VALUE_PARAMETER)
-                ),
-        FqName("javax.annotation.ParametersAreNonnullByDefault") to
-                NullabilityQualifierWithApplicability(
-                        NullabilityQualifier.NOT_NULL,
-                        listOf(AnnotationTypeQualifierResolver.QualifierApplicabilityType.VALUE_PARAMETER)
-                )
 )
 
 fun LazyJavaResolverContext.replaceComponents(

@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.config
 
+import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.utils.Jsr305State
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -40,7 +41,7 @@ class AnalysisFlag<out T> internal constructor(
         }
 
         object Jsr305StateWarnByDefault {
-            operator fun provideDelegate(instance: Any?, property: KProperty<*>) = Flag(property.name, Jsr305State.WARN)
+            operator fun provideDelegate(instance: Any?, property: KProperty<*>) = Flag(property.name, Jsr305State.DEFAULT)
         }
     }
 
