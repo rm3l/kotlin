@@ -24,12 +24,15 @@ import org.jetbrains.kotlin.builtins.isBuiltinFunctionalType
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationsImpl
+import org.jetbrains.kotlin.descriptors.contracts.ContractProviderKey
+import org.jetbrains.kotlin.descriptors.contracts.LazyContractProvider
 import org.jetbrains.kotlin.descriptors.impl.ClassConstructorDescriptorImpl
 import org.jetbrains.kotlin.descriptors.impl.FunctionExpressionDescriptor
 import org.jetbrains.kotlin.descriptors.impl.SimpleFunctionDescriptorImpl
 import org.jetbrains.kotlin.descriptors.impl.ValueParameterDescriptorImpl
 import org.jetbrains.kotlin.diagnostics.DiagnosticUtils
 import org.jetbrains.kotlin.diagnostics.Errors.*
+import org.jetbrains.kotlin.contracts.parsing.ContractParsingServices
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.*
@@ -63,7 +66,9 @@ class FunctionDescriptorResolver(
         private val annotationResolver: AnnotationResolver,
         private val builtIns: KotlinBuiltIns,
         private val modifiersChecker: ModifiersChecker,
-        private val overloadChecker: OverloadChecker
+        private val overloadChecker: OverloadChecker,
+        private val bodyResolver: BodyResolver,
+        private val contractParsingServices: ContractParsingServices
 ) {
     fun resolveFunctionDescriptor(
             containingDescriptor: DeclarationDescriptor,
@@ -105,7 +110,7 @@ class FunctionDescriptorResolver(
                 CallableMemberDescriptor.Kind.DECLARATION,
                 function.toSourceElement()
         )
-        initializeFunctionDescriptorAndExplicitReturnType(containingDescriptor, scope, function, functionDescriptor, trace, expectedFunctionType)
+        initializeFunctionDescriptorAndExplicitReturnType(containingDescriptor, scope, function, functionDescriptor, trace, expectedFunctionType, dataFlowInfo)
         initializeFunctionReturnTypeBasedOnFunctionBody(scope, function, functionDescriptor, trace, dataFlowInfo)
         BindingContextUtils.recordFunctionDeclarationToDescriptor(trace, function, functionDescriptor)
         return functionDescriptor
@@ -139,7 +144,8 @@ class FunctionDescriptorResolver(
             function: KtFunction,
             functionDescriptor: SimpleFunctionDescriptorImpl,
             trace: BindingTrace,
-            expectedFunctionType: KotlinType
+            expectedFunctionType: KotlinType,
+            dataFlowInfo: DataFlowInfo
     ) {
         val headerScope = LexicalWritableScope(scope, functionDescriptor, true,
                                                TraceBasedLocalRedeclarationChecker(trace, overloadChecker), LexicalScopeKind.FUNCTION_HEADER)
@@ -167,6 +173,12 @@ class FunctionDescriptorResolver(
         val visibility = resolveVisibilityFromModifiers(function, getDefaultVisibility(function, containingDescriptor))
         val modality = resolveMemberModalityFromModifiers(function, getDefaultModality(containingDescriptor, visibility, function.hasBody()),
                                                           trace.bindingContext, containingDescriptor)
+        val contractProvider = if (contractParsingServices.fastCheckIfContractPresent(function)) {
+            LazyContractProvider(functionDescriptor) { bodyResolver.resolveFunctionBody(dataFlowInfo, trace, function, functionDescriptor, scope) }
+        } else {
+            LazyContractProvider.createInitialized(functionDescriptor, null)
+        }
+
         functionDescriptor.initialize(
                 receiverType,
                 getDispatchReceiverParameterIfNeeded(containingDescriptor),
@@ -174,7 +186,8 @@ class FunctionDescriptorResolver(
                 valueParameterDescriptors,
                 returnType,
                 modality,
-                visibility
+                visibility,
+                mapOf(ContractProviderKey to contractProvider)
         )
         functionDescriptor.isOperator = function.hasModifier(KtTokens.OPERATOR_KEYWORD)
         functionDescriptor.isInfix = function.hasModifier(KtTokens.INFIX_KEYWORD)
