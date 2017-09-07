@@ -138,7 +138,7 @@ public abstract class AbstractLoadJavaTest extends TestCaseWithTmpdir {
 
         DescriptorValidator.validate(errorTypesForbidden(), packageFromSource);
         DescriptorValidator.validate(new DeserializedScopeValidationVisitor(), packageFromBinary);
-        Configuration comparatorConfiguration = COMPARATOR_CONFIGURATION.checkPrimaryConstructors(true).checkPropertyAccessors(true);
+        Configuration comparatorConfiguration = COMPARATOR_CONFIGURATION.checkPrimaryConstructors(true).checkPropertyAccessors(true).checkFunctionContracts(true);
         compareDescriptors(packageFromSource, packageFromBinary, comparatorConfiguration, txtFile);
     }
 

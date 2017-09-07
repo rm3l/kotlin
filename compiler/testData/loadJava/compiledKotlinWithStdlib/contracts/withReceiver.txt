@@ -1,0 +1,5 @@
+package test
+
+public fun test(/*0*/ x: kotlin.String?): kotlin.Unit
+public fun kotlin.Any?.isNotNull(): kotlin.Boolean
+    Returns(TRUE) -> <this> != null
