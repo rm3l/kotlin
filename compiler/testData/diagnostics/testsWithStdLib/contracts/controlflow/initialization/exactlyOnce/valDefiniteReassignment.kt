@@ -1,0 +1,26 @@
+// !LANGUAGE: +CalledInPlaceEffect
+
+import kotlin.internal.contracts.*
+
+fun <T> myRun(block: () -> T): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return block()
+}
+
+fun reassignmentInUsualFlow() {
+    val x: Int
+    myRun { x = 42 }
+    <!VAL_REASSIGNMENT!>x<!> = 43
+    x.inc()
+}
+
+fun reassignment() {
+    val x = <!VARIABLE_WITH_REDUNDANT_INITIALIZER!>42<!>
+    myRun {
+        <!VAL_REASSIGNMENT!>x<!> = 43
+    }
+    x.inc()
+}
+
