@@ -258,6 +258,17 @@ public class ExpressionTypingServices {
 
         boolean isFirstStatement = true;
         for (Iterator<? extends KtElement> iterator = block.iterator(); iterator.hasNext(); ) {
+            // Use filtering trace to keep effect system cache only for one statement
+            TemporaryBindingTrace traceForSingleStatement = TemporaryBindingTrace.create(
+                    context.trace,
+                    "trace for single statement",
+                    BindingTraceFilter.Companion.getACCEPT_ALL(),
+                    true
+            );
+
+            newContext = newContext.replaceBindingTrace(traceForSingleStatement);
+
+
             KtElement statement = iterator.next();
             if (!(statement instanceof KtExpression)) {
                 continue;
@@ -292,6 +303,13 @@ public class ExpressionTypingServices {
                 // We take current data flow info if jump there is not possible
             }
             blockLevelVisitor = new ExpressionTypingVisitorDispatcher.ForBlock(expressionTypingComponents, annotationChecker, scope);
+
+            // Don't commit cache of effect system into parent trace
+            traceForSingleStatement.commit(
+                    (slice, key) -> slice != BindingContext.EXPRESSION_EFFECTS && slice != BindingContext.EXPRESSION_CALL_TREE,
+                    true
+            );
+
             expressionTypingComponents.contractParsingServices.checkContractAndRecordIfPresent(statementExpression, context.trace, scope, isFirstStatement);
             
             if (isFirstStatement) {
@@ -350,5 +368,4 @@ public class ExpressionTypingServices {
         }
         return result;
     }
-
 }
