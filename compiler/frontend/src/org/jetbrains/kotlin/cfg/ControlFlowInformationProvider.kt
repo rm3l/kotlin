@@ -34,6 +34,7 @@ import org.jetbrains.kotlin.cfg.pseudocodeTraverser.*
 import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.contracts.effects.InvocationKind
 import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory
 import org.jetbrains.kotlin.diagnostics.Errors
@@ -367,7 +368,8 @@ class ControlFlowInformationProvider private constructor(
         // Do not consider top-level properties
         if (containingDeclarationDescriptor is PackageFragmentDescriptor) return false
         var parentDeclaration = getElementParentDeclaration(writeValueInstruction.element)
-        while (true) {
+
+        loop@ while (true) {
             val context = trace.bindingContext
             val parentDescriptor = getDeclarationDescriptorIncludingConstructors(context, parentDeclaration)
             if (parentDescriptor == containingDeclarationDescriptor) {
@@ -379,6 +381,13 @@ class ControlFlowInformationProvider private constructor(
                     parentDeclaration = getElementParentDeclaration(parentDeclaration)
                 }
                 is KtDeclarationWithBody -> {
+                    // If it is captured write in lambda with statically known amount of invocations then just skip it (treat as parent)
+                    val maybeEnclosingLambdaExpr = parentDeclaration.parent
+                    if (maybeEnclosingLambdaExpr is KtLambdaExpression && trace[BindingContext.LAMBDA_INVOCATIONS, maybeEnclosingLambdaExpr] == InvocationKind.EXACTLY_ONCE) {
+                        parentDeclaration = getElementParentDeclaration(parentDeclaration)
+                        continue@loop
+                    }
+
                     if (parentDeclaration is KtFunction && parentDeclaration.isLocal) return true
                     // miss non-local function or accessor just once
                     parentDeclaration = getElementParentDeclaration(parentDeclaration)
