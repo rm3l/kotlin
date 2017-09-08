@@ -63,3 +63,22 @@ fun threeLevelsReturnWithInitialization(x: Int?): Int? {
     }
     return y.inc()
 }
+
+fun threeLevelsReturnWithUnknown(x: Int?): Int? {
+    val y: Int
+    myRun outer@ {
+        unknownRun middle@ {
+            x.myLet inner@ {
+                if (it == null) {
+                    <!CAPTURED_VAL_INITIALIZATION!>y<!> = 42
+                    return@outer Unit
+                }
+                else {
+                    y = 34
+                    return@outer Unit
+                }
+            }
+        }
+    }
+    return <!UNINITIALIZED_VARIABLE!>y<!>.inc()
+}
