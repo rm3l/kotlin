@@ -1,0 +1,300 @@
+== myLet ==
+inline fun <T, R> T.myLet(block: (T) -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return block(this)
+}
+---------------------
+L0:
+  1 <START>
+    v(block: (T) -> R)
+    magic[FAKE_INITIALIZER](block: (T) -> R) -> <v0>
+    w(block|<v0>)
+  2 mark({ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } return block(this) })
+    mark({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
+    jmp?(L2)                                                                                                     NEXT:[r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>, d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })]
+    d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })                                                      NEXT:[<SINK>]
+L2 [after local declaration]:
+    r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>                                              PREV:[jmp?(L2)]
+    mark(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
+    magic[UNRESOLVED_CALL](contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }|<v1>, !<v2>) -> <v3>
+    r(block) -> <v4>
+    r(this, <this>) -> <v5>
+    mark(block(this))
+    call(block(this), invoke|<v4>, <v5>) -> <v6>
+    ret(*|<v6>) L1
+L1:
+  1 <END>                                                                                                        NEXT:[<SINK>]
+error:
+-   <ERROR>                                                                                                      PREV:[]
+sink:
+    <SINK>                                                                                                       PREV:[<END>, d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })]
+=====================
+== anonymous_0 ==
+{
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+---------------------
+L3:
+  3 <START>
+  4 mark(callsInPlace(block, InvocationKind.EXACTLY_ONCE))
+    r(block) -> <v0>
+    mark(InvocationKind.EXACTLY_ONCE)
+    magic[UNRESOLVED_CALL](InvocationKind) -> <v1>
+    r(EXACTLY_ONCE, <ERROR PROPERTY>|<v1>) -> <v2>
+    mark(callsInPlace(block, InvocationKind.EXACTLY_ONCE))
+    magic[UNRESOLVED_CALL](callsInPlace(block, InvocationKind.EXACTLY_ONCE)|<v0>, <v2>, !<v3>) -> <v4>
+  3 ret(*|<v4>) L4
+L4:
+    <END>                                                                                                 NEXT:[<SINK>]
+error:
+-   <ERROR>                                                                                               PREV:[]
+sink:
+    <SINK>                                                                                                PREV:[<END>]
+=====================
+== myRun ==
+inline fun myRun(block: () -> Unit) {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    block()
+}
+---------------------
+L0:
+  1 <START>
+    v(block: () -> Unit)
+    magic[FAKE_INITIALIZER](block: () -> Unit) -> <v0>
+    w(block|<v0>)
+  2 mark({ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } block() })
+    mark({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
+    jmp?(L2)                                                                                                     NEXT:[r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>, d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })]
+    d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })                                                      NEXT:[<SINK>]
+L2 [after local declaration]:
+    r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>                                              PREV:[jmp?(L2)]
+    mark(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
+    magic[UNRESOLVED_CALL](contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }|<v1>, !<v2>) -> <v3>
+    r(block) -> <v4>
+    mark(block())
+    call(block(), invoke|<v4>) -> <v5>
+L1:
+  1 <END>                                                                                                        NEXT:[<SINK>]
+error:
+-   <ERROR>                                                                                                      PREV:[]
+sink:
+    <SINK>                                                                                                       PREV:[<END>, d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })]
+=====================
+== anonymous_1 ==
+{
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+---------------------
+L3:
+  3 <START>
+  4 mark(callsInPlace(block, InvocationKind.EXACTLY_ONCE))
+    r(block) -> <v0>
+    mark(InvocationKind.EXACTLY_ONCE)
+    magic[UNRESOLVED_CALL](InvocationKind) -> <v1>
+    r(EXACTLY_ONCE, <ERROR PROPERTY>|<v1>) -> <v2>
+    mark(callsInPlace(block, InvocationKind.EXACTLY_ONCE))
+    magic[UNRESOLVED_CALL](callsInPlace(block, InvocationKind.EXACTLY_ONCE)|<v0>, <v2>, !<v3>) -> <v4>
+  3 ret(*|<v4>) L4
+L4:
+    <END>                                                                                                 NEXT:[<SINK>]
+error:
+-   <ERROR>                                                                                               PREV:[]
+sink:
+    <SINK>                                                                                                PREV:[<END>]
+=====================
+== unknownRun ==
+inline fun unknownRun(block: () -> Unit) = block()
+---------------------
+L0:
+  1 <START>
+    v(block: () -> Unit)
+    magic[FAKE_INITIALIZER](block: () -> Unit) -> <v0>
+    w(block|<v0>)
+    r(block) -> <v1>
+    mark(block())
+    call(block(), invoke|<v1>) -> <v2>
+    ret(*|<v2>) L1
+L1:
+    <END>                                                 NEXT:[<SINK>]
+error:
+-   <ERROR>                                               PREV:[]
+sink:
+    <SINK>                                                PREV:[<END>]
+=====================
+== getBool ==
+fun getBool(): Boolean = false
+---------------------
+L0:
+  1 <START>
+    r(false) -> <v0>
+    ret(*|<v0>) L1
+L1:
+    <END>               NEXT:[<SINK>]
+error:
+-   <ERROR>             PREV:[]
+sink:
+    <SINK>              PREV:[<END>]
+=====================
+== threeLayersReturn ==
+fun threeLayersReturn(x: Int?): Int? {
+    // Inner always jumps to outer
+    // And middle always calls inner
+    // So, in fact, middle never finished normally
+    // Hence 'y = 54' in middle is unreachable, and middle doesn't performs definite initalization
+    // Hence, outer doesn't performs definite initialization
+    val y: Int
+    myRun outer@ {
+        myRun middle@ {
+            x.myLet inner@ {
+                if (it == null) {
+                    return@outer Unit
+                }
+                else {
+                    return@outer Unit
+                }
+            }
+        }
+        // Possible to report unreachable here
+        y = 54
+    }
+    return y.inc()
+}
+---------------------
+L0:
+  1 <START>
+    v(x: Int?)
+    magic[FAKE_INITIALIZER](x: Int?) -> <v0>
+    w(x|<v0>)
+  2 mark({ // Inner always jumps to outer // And middle always calls inner // So, in fact, middle never finished normally // Hence 'y = 54' in middle is unreachable, and middle doesn't performs definite initalization // Hence, outer doesn't performs definite initialization val y: Int myRun outer@ { myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 } return y.inc() })
+    v(val y: Int)
+    mark(outer@ { myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 })
+    mark({ myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 })
+    jmp?(L2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           NEXT:[r({ myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 }) -> <v1>, d({ myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 })]
+    d({ myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 })                                                                                                                                                                                                                                                                                                                         NEXT:[<SINK>]
+L2 [after local declaration]:
+    r({ myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 }) -> <v1>                                                                                                                                                                                                                                                                                                                 PREV:[jmp?(L2)]
+    mark(myRun outer@ { myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 })
+    call(myRun outer@ { myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 }, myRun|<v1>) -> <v2>
+    mark(y.inc())
+    r(y) -> <v3>
+    mark(inc())
+    call(inc(), inc|<v3>) -> <v4>
+    ret(*|<v4>) L1
+L1:
+  1 <END>                                                                                                                                                                                                                                                                                                                                                                                                                                                                              NEXT:[<SINK>]
+error:
+-   <ERROR>                                                                                                                                                                                                                                                                                                                                                                                                                                                                            PREV:[]
+sink:
+    <SINK>                                                                                                                                                                                                                                                                                                                                                                                                                                                                             PREV:[<END>, d({ myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 })]
+=====================
+== anonymous_2 ==
+{
+        myRun middle@ {
+            x.myLet inner@ {
+                if (it == null) {
+                    return@outer Unit
+                }
+                else {
+                    return@outer Unit
+                }
+            }
+        }
+        // Possible to report unreachable here
+        y = 54
+    }
+---------------------
+L3:
+  3 <START>
+  4 mark(myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54)
+    mark(middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } })
+    mark({ x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } })
+    jmp?(L5)                                                                                                                                                     NEXT:[r({ x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } }) -> <v0>, d({ x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } })]
+    d({ x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } })                                                                   NEXT:[<SINK>]
+L5 [after local declaration]:
+    r({ x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } }) -> <v0>                                                           PREV:[jmp?(L5)]
+    mark(myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } })
+    call(myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } }, myRun|<v0>) -> <v1>
+    r(54) -> <v2>
+    w(y|<v2>)
+L4:
+  3 <END>                                                                                                                                                        NEXT:[<SINK>]                                                                                                                                                                                            PREV:[ret(*|<v3>) L4, ret(*|<v5>) L4, w(y|<v2>)]
+error:
+-   <ERROR>                                                                                                                                                      PREV:[]
+sink:
+    <SINK>                                                                                                                                                       PREV:[<END>, d({ x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } })]
+=====================
+== anonymous_3 ==
+{
+            x.myLet inner@ {
+                if (it == null) {
+                    return@outer Unit
+                }
+                else {
+                    return@outer Unit
+                }
+            }
+        }
+---------------------
+L6:
+  5 <START>
+  6 mark(x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } })
+    mark(x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } })
+    r(x) -> <v0>
+    mark(inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } })
+    mark({ if (it == null) { return@outer Unit } else { return@outer Unit } })
+    jmp?(L8)                                                                                                     NEXT:[r({ if (it == null) { return@outer Unit } else { return@outer Unit } }) -> <v1>, d({ if (it == null) { return@outer Unit } else { return@outer Unit } })]
+    d({ if (it == null) { return@outer Unit } else { return@outer Unit } })                                      NEXT:[<SINK>]
+L8 [after local declaration]:
+    r({ if (it == null) { return@outer Unit } else { return@outer Unit } }) -> <v1>                              PREV:[jmp?(L8)]
+    mark(myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } })
+    call(myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } }, myLet|<v0>, <v1>)
+    jmp(error)                                                                                                   NEXT:[<ERROR>]
+-   jmp(error)                                                                                                   NEXT:[<ERROR>]                                                                                                                                                     PREV:[]
+L7:
+- 5 <END>                                                                                                        NEXT:[<SINK>]                                                                                                                                                      PREV:[]
+error:
+    <ERROR>                                                                                                      PREV:[jmp(error)]
+sink:
+    <SINK>                                                                                                       PREV:[<ERROR>, d({ if (it == null) { return@outer Unit } else { return@outer Unit } })]
+=====================
+== anonymous_4 ==
+{
+                if (it == null) {
+                    return@outer Unit
+                }
+                else {
+                    return@outer Unit
+                }
+            }
+---------------------
+L9:
+  7 <START>
+  8 mark(if (it == null) { return@outer Unit } else { return@outer Unit })
+    mark(if (it == null) { return@outer Unit } else { return@outer Unit })
+    r(it) -> <v0>
+    r(null) -> <v1>
+    mark(it == null)
+    call(it == null, equals|<v0>, <v1>) -> <v2>
+    jf(L11|<v2>)                                                                                    NEXT:[mark({ return@outer Unit }), mark({ return@outer Unit })]
+  9 mark({ return@outer Unit })
+    r(Unit) -> <v3>
+    ret(*|<v3>) L4                                                                                  NEXT:[<END>]
+- 8 jmp(L12)                                                                                        NEXT:[merge(if (it == null) { return@outer Unit } else { return@outer Unit }|!<v4>, !<v6>) -> <v7>]    PREV:[]
+L11 [else branch]:
+  9 mark({ return@outer Unit })                                                                     PREV:[jf(L11|<v2>)]
+    r(Unit) -> <v5>
+    ret(*|<v5>) L4                                                                                  NEXT:[<END>]
+L12 ['if' expression result]:
+- 8 merge(if (it == null) { return@outer Unit } else { return@outer Unit }|!<v4>, !<v6>) -> <v7>    PREV:[]
+- 7 ret(*|<v7>) L10                                                                                 PREV:[]
+L10:
+-   <END>                                                                                           NEXT:[<SINK>]                                                                                          PREV:[]
+error:
+-   <ERROR>                                                                                         PREV:[]
+sink:
+-   <SINK>                                                                                          PREV:[]
+=====================
