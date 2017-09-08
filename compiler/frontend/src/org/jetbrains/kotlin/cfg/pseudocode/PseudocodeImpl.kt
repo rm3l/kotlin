@@ -53,6 +53,8 @@ class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode 
         getLocalDeclarations(this)
     }
 
+    val reachableInstructions = hashSetOf<Instruction>()
+
     private val representativeInstructions = HashMap<KtElement, KtElementInstruction>()
 
     private val labels = ArrayList<PseudocodeLabel>()
@@ -213,7 +215,7 @@ class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode 
         ) { arrayListOf() }.add(usage)
     }
 
-    fun postProcess(globalReachableInstructionsSet: MutableSet<Instruction> = hashSetOf()) {
+    fun postProcess() {
         if (postPrecessed) return
         postPrecessed = true
         errorInstruction.sink = sinkInstruction
@@ -221,23 +223,23 @@ class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode 
 
         for ((index, instruction) in mutableInstructionList.withIndex()) {
             //recursively invokes 'postProcess' for local declarations, thus it needs global set of reachable instructions
-            instruction.processInstruction(index, globalReachableInstructionsSet)
+            instruction.processInstruction(index)
         }
 
-        collectAndCacheReachableInstructions(globalReachableInstructionsSet)
+        collectAndCacheReachableInstructions()
     }
 
-    private fun collectAndCacheReachableInstructions(alreadyVisited: MutableSet<Instruction>) {
-        collectReachableInstructions(alreadyVisited)
+    private fun collectAndCacheReachableInstructions() {
+        collectReachableInstructions()
         for (instruction in mutableInstructionList) {
-            if (alreadyVisited.contains(instruction)) {
+            if (reachableInstructions.contains(instruction)) {
                 instructions.add(instruction)
             }
         }
         markDeadInstructions()
     }
 
-    private fun Instruction.processInstruction(currentPosition: Int, visited: MutableSet<Instruction>) {
+    private fun Instruction.processInstruction(currentPosition: Int) {
         accept(object : InstructionVisitor() {
             override fun visitInstructionWithNext(instruction: InstructionWithNext) {
                 instruction.next = getNextPosition(currentPosition)
@@ -272,14 +274,14 @@ class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode 
             override fun visitLocalFunctionDeclarationInstruction(instruction: LocalFunctionDeclarationInstruction) {
                 val body = instruction.body as PseudocodeImpl
                 body.parent = this@PseudocodeImpl
-                body.postProcess(visited)
+                body.postProcess()
                 instruction.next = sinkInstruction
             }
 
             override fun visitInlinedLocalFunctionDeclarationInstruction(instruction: InlinedLocalFunctionDeclarationInstruction) {
                 val body = instruction.body as PseudocodeImpl
                 body.parent = this@PseudocodeImpl
-                body.postProcess(visited)
+                body.postProcess()
                 // Don't add edge to next instruction if flow can't reach exit of inlined declaration
                 instruction.next = if (body.instructions.contains(body.exitInstruction)) getNextPosition(currentPosition) else sinkInstruction
             }
@@ -298,14 +300,17 @@ class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode 
         })
     }
 
-    private fun collectReachableInstructions(alreadyVisited: MutableSet<Instruction>) {
-        traverseFollowingInstructions(enterInstruction, alreadyVisited, FORWARD
+    private fun collectReachableInstructions() {
+        val reachableFromThisPseudocode = hashSetOf<Instruction>()
+        traverseFollowingInstructions(enterInstruction, reachableFromThisPseudocode, FORWARD
         ) { instruction ->
             if (instruction is MagicInstruction && instruction.kind === MagicKind.EXHAUSTIVE_WHEN_ELSE) {
                 return@traverseFollowingInstructions TraverseInstructionResult.SKIP
             }
             TraverseInstructionResult.CONTINUE
         }
+
+        reachableFromThisPseudocode.forEach { (it.owner as PseudocodeImpl).reachableInstructions.add(it) }
     }
 
     private fun markDeadInstructions() {
