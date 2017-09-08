@@ -825,6 +825,12 @@ public class PseudoValueTestGenerated extends AbstractPseudoValueTest {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgWithStdLib/contracts/labeledReturns.kt");
                 doTestWithStdLib(fileName);
             }
+
+            @TestMetadata("nonReturningInlinedLambda.kt")
+            public void testNonReturningInlinedLambda() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgWithStdLib/contracts/nonReturningInlinedLambda.kt");
+                doTestWithStdLib(fileName);
+            }
         }
     }
 
@@ -1081,6 +1087,12 @@ public class PseudoValueTestGenerated extends AbstractPseudoValueTest {
             @TestMetadata("nestedTryCatchs.kt")
             public void testNestedTryCatchs() throws Exception {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/nestedTryCatchs.kt");
+                doTestWithStdLib(fileName);
+            }
+
+            @TestMetadata("nonReturningInlinedLambda.kt")
+            public void testNonReturningInlinedLambda() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/nonReturningInlinedLambda.kt");
                 doTestWithStdLib(fileName);
             }
 

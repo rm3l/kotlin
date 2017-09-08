@@ -286,6 +286,12 @@ public class DataFlowTestGenerated extends AbstractDataFlowTest {
                 doTestWithStdLib(fileName);
             }
 
+            @TestMetadata("nonReturningInlinedLambda.kt")
+            public void testNonReturningInlinedLambda() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/nonReturningInlinedLambda.kt");
+                doTestWithStdLib(fileName);
+            }
+
             @TestMetadata("tryCatch.kt")
             public void testTryCatch() throws Exception {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/tryCatch.kt");
