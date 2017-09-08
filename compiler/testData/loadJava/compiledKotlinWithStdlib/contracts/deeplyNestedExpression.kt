@@ -1,6 +1,6 @@
 package test
 
-import kotlin.effects.dsl.*
+import kotlin.internal.contracts.*
 
 class A
 

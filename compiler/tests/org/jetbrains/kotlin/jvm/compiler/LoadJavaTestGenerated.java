@@ -5017,12 +5017,6 @@ public class LoadJavaTestGenerated extends AbstractLoadJavaTest {
                 doTestCompiledKotlinWithStdlib(fileName);
             }
 
-            @TestMetadata("simpleDslTest.kt")
-            public void testSimpleDslTest() throws Exception {
-                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/loadJava/compiledKotlinWithStdlib/contracts/simpleDslTest.kt");
-                doTestCompiledKotlinWithStdlib(fileName);
-            }
-
             @TestMetadata("withReceiver.kt")
             public void testWithReceiver() throws Exception {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/loadJava/compiledKotlinWithStdlib/contracts/withReceiver.kt");

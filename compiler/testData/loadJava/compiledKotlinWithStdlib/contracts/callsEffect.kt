@@ -1,6 +1,6 @@
 package test
 
-import kotlin.effects.dsl.*
+import kotlin.internal.contracts.*
 
 fun <X, Y, Z, R> callsEffectWithKind(block: (X, Y, Z) -> R) {
     contract {

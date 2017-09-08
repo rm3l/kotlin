@@ -1052,47 +1052,47 @@ public class PseudoValueTestGenerated extends AbstractPseudoValueTest {
             KotlinTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/cfgVariablesWithStdLib"), Pattern.compile("^(.+)\\.kt$"), TargetBackend.ANY, true);
         }
 
-        @TestMetadata("compiler/testData/cfgVariablesWithStdLib/effects")
+        @TestMetadata("compiler/testData/cfgVariablesWithStdLib/contracts")
         @TestDataPath("$PROJECT_ROOT")
         @RunWith(JUnit3RunnerWithInners.class)
-        public static class Effects extends AbstractPseudoValueTest {
-            public void testAllFilesPresentInEffects() throws Exception {
-                KotlinTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/cfgVariablesWithStdLib/effects"), Pattern.compile("^(.+)\\.kt$"), TargetBackend.ANY, true);
+        public static class Contracts extends AbstractPseudoValueTest {
+            public void testAllFilesPresentInContracts() throws Exception {
+                KotlinTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/cfgVariablesWithStdLib/contracts"), Pattern.compile("^(.+)\\.kt$"), TargetBackend.ANY, true);
             }
 
             @TestMetadata("breakContinuesInInlinedLambda.kt")
             public void testBreakContinuesInInlinedLambda() throws Exception {
-                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/effects/breakContinuesInInlinedLambda.kt");
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/breakContinuesInInlinedLambda.kt");
                 doTestWithStdLib(fileName);
             }
 
             @TestMetadata("inlinedLambdaAlwaysThrows.kt")
             public void testInlinedLambdaAlwaysThrows() throws Exception {
-                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/effects/inlinedLambdaAlwaysThrows.kt");
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/inlinedLambdaAlwaysThrows.kt");
                 doTestWithStdLib(fileName);
             }
 
             @TestMetadata("nestedTryCatchFinally.kt")
             public void testNestedTryCatchFinally() throws Exception {
-                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/effects/nestedTryCatchFinally.kt");
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/nestedTryCatchFinally.kt");
                 doTestWithStdLib(fileName);
             }
 
             @TestMetadata("nestedTryCatchs.kt")
             public void testNestedTryCatchs() throws Exception {
-                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/effects/nestedTryCatchs.kt");
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/nestedTryCatchs.kt");
                 doTestWithStdLib(fileName);
             }
 
             @TestMetadata("tryCatch.kt")
             public void testTryCatch() throws Exception {
-                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/effects/tryCatch.kt");
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/tryCatch.kt");
                 doTestWithStdLib(fileName);
             }
 
             @TestMetadata("tryCatchFinally.kt")
             public void testTryCatchFinally() throws Exception {
-                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/effects/tryCatchFinally.kt");
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/tryCatchFinally.kt");
                 doTestWithStdLib(fileName);
             }
         }

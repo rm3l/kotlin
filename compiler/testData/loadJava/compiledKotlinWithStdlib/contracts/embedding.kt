@@ -1,6 +1,6 @@
 package test
 
-import kotlin.effects.dsl.*
+import kotlin.internal.contracts.*
 
 // this tests specifically use primitive condition (predicate/value) as the
 // first argument of sequence, so that it would be optimized and embedded into message

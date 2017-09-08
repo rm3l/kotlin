@@ -1,8 +1,6 @@
-// !LANGUAGE: +ContractEffects
-
 package test
 
-import kotlin.effects.dsl.*
+import kotlin.internal.contracts.*
 
 fun foo(x: Any?): Boolean {
     contract {

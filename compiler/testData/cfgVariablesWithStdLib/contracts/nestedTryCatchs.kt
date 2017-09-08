@@ -1,4 +1,4 @@
-// !LANGUAGE: +CalledInPlaceEffect
+// LANGUAGE_VERSION: 1.2
 
 import kotlin.internal.contracts.*
 
