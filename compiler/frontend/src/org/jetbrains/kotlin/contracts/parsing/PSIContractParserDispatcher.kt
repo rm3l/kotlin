@@ -34,9 +34,11 @@ import org.jetbrains.kotlin.contracts.parsing.ContractsDslNames.RETURNS_NOT_NULL
 import org.jetbrains.kotlin.contracts.parsing.effects.PSICallsEffectParser
 import org.jetbrains.kotlin.contracts.parsing.effects.PSIConditionalEffectParser
 import org.jetbrains.kotlin.contracts.parsing.effects.PSIReturnsEffectParser
+import org.jetbrains.kotlin.descriptors.ReceiverParameterDescriptor
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtLambdaExpression
+import org.jetbrains.kotlin.psi.KtThisExpression
 import org.jetbrains.kotlin.resolve.BindingTrace
 import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
 import org.jetbrains.kotlin.resolve.calls.callUtil.getType
@@ -91,6 +93,11 @@ internal class PSIContractParserDispatcher(val trace: BindingTrace, private val 
             trace.report(Errors.ERROR_IN_CONTRACT_DESCRIPTION.on(expression, "only references to parameters are allowed in contract description"))
             return null
         }
+
+        if (descriptor is ReceiverParameterDescriptor && descriptor.type.constructor.declarationDescriptor?.isFromContractsDSL() == true) {
+            trace.report(Errors.ERROR_IN_CONTRACT_DESCRIPTION.on(expression, "only references to parameters are allowed. Did you missed label on <this>?"))
+        }
+
         return if (descriptor.type == DefaultBuiltIns.Instance.booleanType)
             BooleanVariableReference(descriptor)
         else
