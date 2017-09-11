@@ -5005,6 +5005,12 @@ public class LoadJavaTestGenerated extends AbstractLoadJavaTest {
                 doTestCompiledKotlinWithStdlib(fileName);
             }
 
+            @TestMetadata("multieffectContracts.kt")
+            public void testMultieffectContracts() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/loadJava/compiledKotlinWithStdlib/contracts/multieffectContracts.kt");
+                doTestCompiledKotlinWithStdlib(fileName);
+            }
+
             @TestMetadata("mutualRecursion.kt")
             public void testMutualRecursion() throws Exception {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/loadJava/compiledKotlinWithStdlib/contracts/mutualRecursion.kt");

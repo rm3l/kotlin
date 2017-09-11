@@ -944,6 +944,12 @@ public class DiagnosticsTestWithStdLibGenerated extends AbstractDiagnosticsTestW
                     String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/dsl/errors/referenceToProperty.kt");
                     doTest(fileName);
                 }
+
+                @TestMetadata("unlabeledReceiver.kt")
+                public void testUnlabeledReceiver() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/dsl/errors/unlabeledReceiver.kt");
+                    doTest(fileName);
+                }
             }
         }
 
@@ -1087,6 +1093,27 @@ public class DiagnosticsTestWithStdLibGenerated extends AbstractDiagnosticsTestW
                         String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/smartcasts/mirror/inference/kt2746.kt");
                         doTest(fileName);
                     }
+                }
+            }
+
+            @TestMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/smartcasts/multieffect")
+            @TestDataPath("$PROJECT_ROOT")
+            @RunWith(JUnit3RunnerWithInners.class)
+            public static class Multieffect extends AbstractDiagnosticsTestWithStdLib {
+                public void testAllFilesPresentInMultieffect() throws Exception {
+                    KotlinTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/testsWithStdLib/contracts/smartcasts/multieffect"), Pattern.compile("^(.+)\\.kt$"), TargetBackend.ANY, true);
+                }
+
+                @TestMetadata("implicitIff.kt")
+                public void testImplicitIff() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/smartcasts/multieffect/implicitIff.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("returnsAndCalls.kt")
+                public void testReturnsAndCalls() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/smartcasts/multieffect/returnsAndCalls.kt");
+                    doTest(fileName);
                 }
             }
 
