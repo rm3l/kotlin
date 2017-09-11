@@ -59,34 +59,6 @@ data class Jsr305State(
 
         @JvmField
         val STRICT: Jsr305State = Jsr305State(ReportLevel.STRICT, ReportLevel.STRICT, emptyMap())
-
-        fun fromArgs(args: Array<String>?): Jsr305State {
-            var global: ReportLevel = ReportLevel.WARN
-            var migration: ReportLevel? = null
-            val userDefined = mutableMapOf<String, ReportLevel>()
-
-            args?.forEach { item ->
-                when {
-                    item.startsWith("@") -> {
-                        val (name, rawState) = item.substring(1).split(":").takeIf { it.size == 2 } ?: return@forEach
-                        val state = ReportLevel.findByDescription(rawState) ?: return@forEach
-                        userDefined[name] = state
-                    }
-                    item.startsWith("under-migration") -> {
-                        val (_, rawState) = item.split(":").takeIf { it.size == 2 } ?: return@forEach
-                        val state = ReportLevel.findByDescription(rawState) ?: return@forEach
-                        migration = state
-                    }
-                    else -> {
-                        global = ReportLevel.findByDescription(item) ?: return@forEach
-                    }
-                }
-            }
-
-            val result = Jsr305State(global, migration, userDefined)
-            return if (result == DISABLED) DISABLED else result
-        }
-
     }
 }
 
