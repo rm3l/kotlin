@@ -49,8 +49,8 @@ class ControlFlowInstructionsGenerator : ControlFlowBuilderAdapter() {
 
     private val allBlocks = Stack<BlockInfo>()
 
-    private fun pushBuilder(scopingElement: KtElement, subroutine: KtElement) {
-        val worker = ControlFlowInstructionsGeneratorWorker(scopingElement, subroutine)
+    private fun pushBuilder(scopingElement: KtElement, subroutine: KtElement, shouldInline: Boolean) {
+        val worker = ControlFlowInstructionsGeneratorWorker(scopingElement, subroutine, shouldInline)
         builders.push(worker)
         builder = worker
     }
@@ -68,11 +68,12 @@ class ControlFlowInstructionsGenerator : ControlFlowBuilderAdapter() {
 
     override fun enterSubroutine(subroutine: KtElement, invocationKind: InvocationKind?) {
         val builder = builder
+        val shouldInlnie = invocationKind != null
         if (builder != null && subroutine is KtFunctionLiteral) {
-            pushBuilder(subroutine, builder.returnSubroutine)
+            pushBuilder(subroutine, builder.returnSubroutine, shouldInlnie)
         }
         else {
-            pushBuilder(subroutine, subroutine)
+            pushBuilder(subroutine, subroutine, shouldInlnie)
         }
         delegateBuilder.enterBlockScope(subroutine)
         delegateBuilder.enterSubroutine(subroutine)
@@ -94,9 +95,13 @@ class ControlFlowInstructionsGenerator : ControlFlowBuilderAdapter() {
         return worker.pseudocode
     }
 
-    private inner class ControlFlowInstructionsGeneratorWorker(scopingElement: KtElement, override val returnSubroutine: KtElement) : ControlFlowBuilder {
+    private inner class ControlFlowInstructionsGeneratorWorker(
+            scopingElement: KtElement,
+            override val returnSubroutine: KtElement,
+            shouldInline: Boolean
+    ) : ControlFlowBuilder {
 
-        val pseudocode: PseudocodeImpl = PseudocodeImpl(scopingElement)
+        val pseudocode: PseudocodeImpl = PseudocodeImpl(scopingElement, shouldInline)
         private val error: Label = pseudocode.createLabel("error", null)
         private val sink: Label = pseudocode.createLabel("sink", null)
 

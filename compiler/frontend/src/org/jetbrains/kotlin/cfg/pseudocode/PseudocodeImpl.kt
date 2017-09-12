@@ -35,7 +35,7 @@ import org.jetbrains.kotlin.cfg.pseudocodeTraverser.traverseFollowingInstruction
 import org.jetbrains.kotlin.psi.KtElement
 import java.util.*
 
-class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode {
+class PseudocodeImpl(override val correspondingElement: KtElement, override val isInlined: Boolean) : Pseudocode {
 
     internal val mutableInstructionList = ArrayList<Instruction>()
     override val instructions = ArrayList<Instruction>()
@@ -310,6 +310,14 @@ class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode 
             TraverseInstructionResult.CONTINUE
         }
 
+        // Don't force-add EXIT and ERROR for inlined pseudocodes because for such
+        // declarations those instructions has special semantic
+        if (!isInlined) {
+            reachableFromThisPseudocode.add(exitInstruction)
+            reachableFromThisPseudocode.add(errorInstruction)
+            reachableFromThisPseudocode.add(sinkInstruction)
+        }
+
         reachableFromThisPseudocode.forEach { (it.owner as PseudocodeImpl).reachableInstructions.add(it) }
     }
 
@@ -334,7 +342,7 @@ class PseudocodeImpl(override val correspondingElement: KtElement) : Pseudocode 
     }
 
     override fun copy(): PseudocodeImpl {
-        val result = PseudocodeImpl(correspondingElement)
+        val result = PseudocodeImpl(correspondingElement, isInlined)
         result.repeatWhole(this)
         return result
     }

@@ -30,12 +30,12 @@ import org.jetbrains.kotlin.cfg.pseudocode.PseudocodeImpl
 import org.jetbrains.kotlin.cfg.pseudocode.instructions.eval.AccessTarget
 import org.jetbrains.kotlin.cfg.pseudocode.instructions.eval.InstructionWithValue
 import org.jetbrains.kotlin.cfg.pseudocode.instructions.eval.MagicKind
+import org.jetbrains.kotlin.contracts.effects.canBeRevisited
+import org.jetbrains.kotlin.contracts.effects.isDefinitelyVisited
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.contracts.effects.InvocationKind
 import org.jetbrains.kotlin.descriptors.impl.AnonymousFunctionDescriptor
 import org.jetbrains.kotlin.diagnostics.Errors.*
-import org.jetbrains.kotlin.contracts.effects.canBeRevisited
-import org.jetbrains.kotlin.contracts.effects.isDefinitelyVisited
 import org.jetbrains.kotlin.lexer.KtToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.lexer.KtTokens.*
@@ -1074,6 +1074,10 @@ class ControlFlowProcessor(private val trace: BindingTrace) {
         override fun visitLambdaExpression(lambdaExpression: KtLambdaExpression) {
             mark(lambdaExpression)
             val functionLiteral = lambdaExpression.functionLiteral
+
+            // NB. Behaviour here is implicitly controlled by the LanguageFeature 'CalledInPlaceEffect'
+            // If this feature is turned off, then slice LAMBDA_INVOCATIONS is never written and invocationKind
+            // in all subsequent calls always 'null', resulting in falling back to old behaviour
             visitFunction(functionLiteral, trace[BindingContext.LAMBDA_INVOCATIONS, lambdaExpression])
             copyValue(functionLiteral, lambdaExpression)
         }
