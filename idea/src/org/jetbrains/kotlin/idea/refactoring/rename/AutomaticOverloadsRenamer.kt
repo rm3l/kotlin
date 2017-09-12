@@ -27,7 +27,7 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.getResolutionFacade
-import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptor
+import org.jetbrains.kotlin.idea.caches.resolve.unsafeResolveToDescriptor
 import org.jetbrains.kotlin.idea.highlighter.markers.headerDescriptor
 import org.jetbrains.kotlin.idea.util.getAllAccessibleFunctions
 import org.jetbrains.kotlin.idea.util.getResolutionScope
@@ -63,7 +63,7 @@ class AutomaticOverloadsRenamer(function: KtNamedFunction, newName: String) : Au
 private fun KtNamedFunction.getOverloads(): Collection<FunctionDescriptor> {
     val name = nameAsName ?: return emptyList()
     val resolutionFacade = getResolutionFacade()
-    val descriptor = this.resolveToDescriptor() as FunctionDescriptor
+    val descriptor = this.unsafeResolveToDescriptor() as FunctionDescriptor
     val context = resolutionFacade.analyze(this, BodyResolveMode.FULL)
     val scope = getResolutionScope(context, resolutionFacade)
     val extensionReceiverClass = descriptor.extensionReceiverParameter?.type?.constructor?.declarationDescriptor as? ClassDescriptor
