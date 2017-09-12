@@ -156,6 +156,9 @@ class KotlinCoreEnvironment private constructor(
     init {
         PersistentFSConstants.setMaxIntellisenseFileSize(FileUtilRt.LARGE_FOR_CONTENT_LOADING)
 
+        val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
+        setupJdkClasspathRoots(messageCollector, configFiles)
+
         val project = projectEnvironment.project
 
         ExpressionCodegenExtension.registerExtensionPoint(project)
@@ -176,7 +179,7 @@ class KotlinCoreEnvironment private constructor(
         project.registerService(ModuleVisibilityManager::class.java, CliModuleVisibilityManagerImpl(configFiles == EnvironmentConfigFiles.JVM_CONFIG_FILES))
 
         registerProjectServicesForCLI(projectEnvironment)
-        val messageCollector = configuration.get(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
+
         registerProjectServices(projectEnvironment, messageCollector)
 
         sourceFiles += CompileEnvironmentUtil.getKtFiles(project, getSourceRootsCheckingForDuplicates(), this.configuration, {
@@ -251,6 +254,31 @@ class KotlinCoreEnvironment private constructor(
         project.putUserData(APPEND_JAVA_SOURCE_ROOTS_HANDLER_KEY, fun(roots: List<File>) {
             updateClasspath(roots.map { JavaSourceRoot(it, null) })
         })
+    }
+
+    private fun setupJdkClasspathRoots(messageCollector: MessageCollector?, configFiles: EnvironmentConfigFiles) {
+        if (configuration.getBoolean(JVMConfigurationKeys.NO_JDK)) return
+
+        val jvmTarget = configFiles == EnvironmentConfigFiles.JVM_CONFIG_FILES
+        if (!jvmTarget) return
+
+        val jdkHome = configuration.get(JVMConfigurationKeys.JDK_HOME)
+        val (javaRoot, classesRoots) = if (jdkHome == null) {
+            val javaHome = File(System.getProperty("java.home"))
+            configuration.put(JVMConfigurationKeys.JDK_HOME, javaHome)
+
+            javaHome to PathUtil.getJdkClassesRootsFromCurrentJre()
+        }
+        else {
+            jdkHome to PathUtil.getJdkClassesRoots(jdkHome)
+        }
+
+        if (!CoreJrtFileSystem.isModularJdk(javaRoot)) {
+            configuration.addJvmClasspathRoots(classesRoots)
+            if (classesRoots.isEmpty()) {
+                messageCollector?.report(ERROR, "No class roots are found in the JDK path: $jdkHome")
+            }
+        }
     }
 
     fun createPackagePartProvider(scope: GlobalSearchScope): JvmPackagePartProvider {
