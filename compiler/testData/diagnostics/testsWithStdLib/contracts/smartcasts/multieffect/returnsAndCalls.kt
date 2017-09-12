@@ -1,4 +1,4 @@
-// !LANGUAGE: +ContractEffects
+// !LANGUAGE: +CalledInPlaceEffect +ContractEffects
 
 import kotlin.internal.contracts.*
 

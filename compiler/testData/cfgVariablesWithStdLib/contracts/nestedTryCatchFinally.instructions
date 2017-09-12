@@ -14,9 +14,9 @@ L0:
   2 mark({ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } return block() })        INIT: in: {block=ID} out: {block=ID}
     mark({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
     jmp?(L2)
-    d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })                                                                               USE: in: {EXACTLY_ONCE=READ, block=READ} out: {EXACTLY_ONCE=READ, block=READ}
+    d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })                                       INIT: in: {block=I} out: {block=I}      USE: in: {EXACTLY_ONCE=READ, block=READ} out: {EXACTLY_ONCE=READ, block=READ}
 L2 [after local declaration]:
-    r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>
+    r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>                               INIT: in: {block=ID} out: {block=ID}
     mark(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
     call(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }, contract|<v1>) -> <v2>                                            USE: in: {block=READ} out: {block=READ}
     r(block) -> <v3>                                                                                                                      USE: in: {} out: {block=READ}
@@ -24,11 +24,11 @@ L2 [after local declaration]:
     call(block(), invoke|<v3>) -> <v4>
     ret(*|<v4>) L1
 L1:
-  1 <END>                                                                                                                                 USE: in: {} out: {}
+  1 <END>
 error:
--   <ERROR>
+    <ERROR>                                                                                       INIT: in: {} out: {}
 sink:
-    <SINK>                                                                                        INIT: in: {block=ID} out: {block=ID}    USE: in: {} out: {}
+    <SINK>                                                                                        INIT: in: {block=I?} out: {block=I?}    USE: in: {} out: {}
 =====================
 == anonymous_0 ==
 {
@@ -45,11 +45,11 @@ L3:
     mark(callsInPlace(block, InvocationKind.EXACTLY_ONCE))
     call(callsInPlace(block, InvocationKind.EXACTLY_ONCE), callsInPlace|<v0>, <v1>, <v2>) -> <v3>
 L4:
-  3 <END>                                                                                                                                    USE: in: {} out: {}
+  3 <END>
 error:
--   <ERROR>
+    <ERROR>                                                                                          INIT: in: {} out: {}
 sink:
-    <SINK>                                                                                           INIT: in: {block=ID} out: {block=ID}    USE: in: {} out: {}
+    <SINK>                                                                                           INIT: in: {block=I} out: {block=I}      USE: in: {} out: {}
 =====================
 == innerComputation ==
 fun innerComputation(): Int = 42
@@ -59,11 +59,11 @@ L0:
     r(42) -> <v0>
     ret(*|<v0>) L1
 L1:
-    <END>                                     USE: in: {} out: {}
+    <END>
 error:
--   <ERROR>
+    <ERROR>
 sink:
-    <SINK>            INIT: in: {} out: {}    USE: in: {} out: {}
+    <SINK>                                    USE: in: {} out: {}
 =====================
 == outerComputation ==
 fun outerComputation(): Int = 52
@@ -73,11 +73,11 @@ L0:
     r(52) -> <v0>
     ret(*|<v0>) L1
 L1:
-    <END>                                     USE: in: {} out: {}
+    <END>
 error:
--   <ERROR>
+    <ERROR>
 sink:
-    <SINK>            INIT: in: {} out: {}    USE: in: {} out: {}
+    <SINK>                                    USE: in: {} out: {}
 =====================
 == log ==
 fun log() = Unit
@@ -87,11 +87,11 @@ L0:
     r(Unit) -> <v0>                            USE: in: {} out: {Unit=READ}
     ret(*|<v0>) L1
 L1:
-    <END>                                      USE: in: {} out: {}
+    <END>
 error:
--   <ERROR>
+    <ERROR>
 sink:
-    <SINK>             INIT: in: {} out: {}    USE: in: {} out: {}
+    <SINK>                                     USE: in: {} out: {}
 =====================
 == outerFinallyInitializes ==
 fun outerFinallyInitializes() {
@@ -177,7 +177,7 @@ error:
 sink:
     <SINK>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 USE: in: {} out: {}
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 {
             try {
                 x = innerComputation()
@@ -277,13 +277,13 @@ L14 [afterCatches]:
     mark(inc())
     call(inc(), inc|<v7>) -> <v8>
 L1:
-  1 <END>                                                                                                                                                                                                                                                                                  INIT: in: {} out: {}                          USE: in: {} out: {}
+  1 <END>                                                                                                                                                                                                                                                                                  INIT: in: {} out: {}
 error:
--   <ERROR>
+    <ERROR>
 sink:
-    <SINK>                                                                                                                                                                                                                                                                                 INIT: in: {} out: {}                          USE: in: {} out: {}
+    <SINK>                                                                                                                                                                                                                                                                                                                               USE: in: {} out: {}
 =====================
-== anonymous_2 ==
+== inlined anonymous_2 ==
 {
             try {
                 innerComputation()

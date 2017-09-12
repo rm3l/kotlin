@@ -63,7 +63,7 @@ inc()                                                                           
 x.inc()                                                                                                                                          <v3>: *                 COPY
 { val x: Int myRun { try { x = someComputation() report(x) } catch (e: java.lang.Exception) { x = 42 report(x) } finally { x = 0 } } x.inc() }   <v3>: *                 COPY
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 {
         try {
             x = someComputation()

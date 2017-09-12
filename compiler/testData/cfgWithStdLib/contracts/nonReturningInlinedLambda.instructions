@@ -26,9 +26,9 @@ L2 [after local declaration]:
 L1:
   1 <END>                                                                                         NEXT:[<SINK>]
 error:
--   <ERROR>                                                                                       PREV:[]
+    <ERROR>                                                                                       PREV:[]
 sink:
-    <SINK>                                                                                        PREV:[<END>, d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })]
+    <SINK>                                                                                        PREV:[<ERROR>, <END>, d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })]
 =====================
 == anonymous_0 ==
 {
@@ -47,9 +47,9 @@ L3:
 L4:
   3 <END>                                                                                            NEXT:[<SINK>]
 error:
--   <ERROR>                                                                                          PREV:[]
+    <ERROR>                                                                                          PREV:[]
 sink:
-    <SINK>                                                                                           PREV:[<END>]
+    <SINK>                                                                                           PREV:[<ERROR>, <END>]
 =====================
 == getBool ==
 fun getBool(): Boolean = false
@@ -61,9 +61,9 @@ L0:
 L1:
     <END>               NEXT:[<SINK>]
 error:
--   <ERROR>             PREV:[]
+    <ERROR>             PREV:[]
 sink:
-    <SINK>              PREV:[<END>]
+    <SINK>              PREV:[<ERROR>, <END>]
 =====================
 == withLabeledReturn ==
 fun withLabeledReturn(y: Int) {
@@ -101,11 +101,11 @@ L3 [after inlined declaration]:
 L1:
   1 <END>                                                                                              NEXT:[<SINK>]
 error:
--   <ERROR>                                                                                            PREV:[]
+    <ERROR>                                                                                            PREV:[]
 sink:
-    <SINK>                                                                                             PREV:[<END>]
+    <SINK>                                                                                             PREV:[<ERROR>, <END>]
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 {
         myRun { return@outer Unit }
         println(y)
@@ -131,7 +131,7 @@ error:
 sink:
     <SINK>                                                   PREV:[<END>, inlined({ return@outer Unit })]
 =====================
-== anonymous_2 ==
+== inlined anonymous_2 ==
 { return@outer Unit }
 ---------------------
 L8:

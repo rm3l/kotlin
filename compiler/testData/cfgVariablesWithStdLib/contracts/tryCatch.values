@@ -57,7 +57,7 @@ inc()                                                                           
 x.inc()                                                                                                                         <v3>: *                COPY
 { val x: Int myRun { try { x = someComputation() x.inc() } catch (e: java.lang.Exception) { // I? x.inc() } } // I? x.inc() }   <v3>: *                COPY
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 {
         try {
             x = someComputation()
@@ -111,7 +111,7 @@ inc()                                                                           
 x.inc()                                                                                                                                                                                          <v3>: *                COPY
 { val x: Int myRun { x = 42 try { x = someComputation() x.inc() } catch (e: java.lang.Exception) { // Possible reassignment x = 42 x.inc() } // Initialized x.inc() } // Initialized x.inc() }   <v3>: *                COPY
 =====================
-== anonymous_2 ==
+== inlined anonymous_2 ==
 {
         x = 42
         try {
@@ -179,7 +179,7 @@ inc()                                                                           
 x.inc()                                                                                                                                                                                                                                                                        <v9>: *                                    COPY
 { var x: Int try { myRun { x = someComputation() x.inc() } } catch (e: java.lang.UnsupportedOperationException) { myRun { x = 42 } } catch (e: java.lang.Exception) { // do nothing } // I? because we can leave with last catch-clause which doesn't initialize x x.inc() }   <v9>: *                                    COPY
 =====================
-== anonymous_3 ==
+== inlined anonymous_3 ==
 {
             x = someComputation()
             x.inc()
@@ -191,7 +191,7 @@ inc()                           <v2>: Int   NEW: call(inc(), inc|<v1>) -> <v2>
 x.inc()                         <v2>: Int   COPY
 x = someComputation() x.inc()   <v2>: Int   COPY
 =====================
-== anonymous_4 ==
+== inlined anonymous_4 ==
 { x = 42 }
 ---------------------
 42       <v0>: Int   NEW: r(42) -> <v0>

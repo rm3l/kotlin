@@ -141,6 +141,10 @@ public abstract class AbstractPseudocodeTest extends KotlinTestWithEnvironmentMa
                 label = (((KtPropertyAccessor) correspondingElement).isGetter() ? "get" : "set") + "_" + propertyName;
             }
 
+            if (pseudocode.isInlined()) {
+                label = "inlined " + label;
+            }
+
             instructionDump.append("== ").append(label).append(" ==\n");
 
             instructionDump.append(correspondingElement.getText());

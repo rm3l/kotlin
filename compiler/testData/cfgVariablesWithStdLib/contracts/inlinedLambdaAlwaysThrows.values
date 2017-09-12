@@ -35,7 +35,7 @@ fun test() {
 myRun { throw java.lang.IllegalArgumentException() }   <v1>: *                 NEW: call(myRun { throw java.lang.IllegalArgumentException() }, myRun|<v0>) -> <v1>
 42                                                     <v2>: Int               NEW: r(42) -> <v2>
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 { throw java.lang.IllegalArgumentException() }
 ---------------------
 IllegalArgumentException()                   <v0>: {<: Throwable}   NEW: call(IllegalArgumentException(), <init>) -> <v0>

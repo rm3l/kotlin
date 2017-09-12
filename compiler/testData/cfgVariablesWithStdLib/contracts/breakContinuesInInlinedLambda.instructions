@@ -14,9 +14,9 @@ L0:
   2 mark({ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } return block() })        INIT: in: {block=ID} out: {block=ID}
     mark({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
     jmp?(L2)
-    d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })                                                                               USE: in: {EXACTLY_ONCE=READ, block=READ} out: {EXACTLY_ONCE=READ, block=READ}
+    d({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) })                                       INIT: in: {block=I} out: {block=I}      USE: in: {EXACTLY_ONCE=READ, block=READ} out: {EXACTLY_ONCE=READ, block=READ}
 L2 [after local declaration]:
-    r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>
+    r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>                               INIT: in: {block=ID} out: {block=ID}
     mark(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) })
     call(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }, contract|<v1>) -> <v2>                                            USE: in: {block=READ} out: {block=READ}
     r(block) -> <v3>                                                                                                                      USE: in: {} out: {block=READ}
@@ -24,11 +24,11 @@ L2 [after local declaration]:
     call(block(), invoke|<v3>) -> <v4>
     ret(*|<v4>) L1
 L1:
-  1 <END>                                                                                                                                 USE: in: {} out: {}
+  1 <END>
 error:
--   <ERROR>
+    <ERROR>                                                                                       INIT: in: {} out: {}
 sink:
-    <SINK>                                                                                        INIT: in: {block=ID} out: {block=ID}    USE: in: {} out: {}
+    <SINK>                                                                                        INIT: in: {block=I?} out: {block=I?}    USE: in: {} out: {}
 =====================
 == anonymous_0 ==
 {
@@ -45,11 +45,11 @@ L3:
     mark(callsInPlace(block, InvocationKind.EXACTLY_ONCE))
     call(callsInPlace(block, InvocationKind.EXACTLY_ONCE), callsInPlace|<v0>, <v1>, <v2>) -> <v3>
 L4:
-  3 <END>                                                                                                                                    USE: in: {} out: {}
+  3 <END>
 error:
--   <ERROR>
+    <ERROR>                                                                                          INIT: in: {} out: {}
 sink:
-    <SINK>                                                                                           INIT: in: {block=ID} out: {block=ID}    USE: in: {} out: {}
+    <SINK>                                                                                           INIT: in: {block=I} out: {block=I}      USE: in: {} out: {}
 =====================
 == getBoolean ==
 fun getBoolean(): Boolean = false
@@ -59,11 +59,11 @@ L0:
     r(false) -> <v0>
     ret(*|<v0>) L1
 L1:
-    <END>                                       USE: in: {} out: {}
+    <END>
 error:
--   <ERROR>
+    <ERROR>
 sink:
-    <SINK>              INIT: in: {} out: {}    USE: in: {} out: {}
+    <SINK>                                      USE: in: {} out: {}
 =====================
 == getBoolean ==
 fun getBoolean() = false
@@ -73,11 +73,11 @@ L0:
     r(false) -> <v0>
     ret(*|<v0>) L1
 L1:
-    <END>                                       USE: in: {} out: {}
+    <END>
 error:
--   <ERROR>
+    <ERROR>
 sink:
-    <SINK>              INIT: in: {} out: {}    USE: in: {} out: {}
+    <SINK>                                      USE: in: {} out: {}
 =====================
 == test ==
 fun test() {
@@ -141,13 +141,13 @@ L33 [after inlined declaration]:
     mark(inc())
     call(inc(), inc|<v7>) -> <v8>
 L1:
-  1 <END>                                                                                                                                                                                                                                     INIT: in: {} out: {}            USE: in: {} out: {}
+  1 <END>                                                                                                                                                                                                                                     INIT: in: {} out: {}
 error:
--   <ERROR>
+    <ERROR>
 sink:
-    <SINK>                                                                                                                                                                                                                                    INIT: in: {} out: {}            USE: in: {} out: {}
+    <SINK>                                                                                                                                                                                                                                                                    USE: in: {} out: {}
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 {
             while (getBoolean()) {
                 do {
@@ -225,7 +225,7 @@ error:
 sink:
     <SINK>                                                                                                                                                               INIT: in: {x=ID} out: {x=ID}      USE: in: {x=READ} out: {x=READ}
 =====================
-== anonymous_2 ==
+== inlined anonymous_2 ==
 {
                         if (getBoolean()) {
                             x = 42
@@ -258,7 +258,7 @@ error:
 sink:
     <SINK>                                                                      INIT: in: {x=ID} out: {x=ID}    USE: in: {x=READ} out: {x=READ}
 =====================
-== anonymous_3 ==
+== inlined anonymous_3 ==
 { x.inc() }
 ---------------------
 L25:
@@ -276,7 +276,7 @@ error:
 sink:
     <SINK>                           INIT: in: {x=ID} out: {x=ID}    USE: in: {x=WRITTEN_AFTER_READ} out: {x=WRITTEN_AFTER_READ}
 =====================
-== anonymous_4 ==
+== inlined anonymous_4 ==
 { x = 42 }
 ---------------------
 L29:
@@ -291,7 +291,7 @@ error:
 sink:
     <SINK>           INIT: in: {x=ID} out: {x=ID}    USE: in: {x=WRITTEN_AFTER_READ} out: {x=WRITTEN_AFTER_READ}
 =====================
-== anonymous_5 ==
+== inlined anonymous_5 ==
 {
             x = 42
         }

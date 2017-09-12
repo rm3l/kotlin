@@ -79,7 +79,7 @@ inc()                                                                           
 x.inc()                                                                                                                                                                                                                            <v8>: *                 COPY
 { val x: Int if (getBoolean()) run { while (getBoolean()) { do { run { if (getBoolean()) { x = 42 } else { x = 43 } } break } while (getBoolean()) run { x.inc() } run { x = 42 } break } x = 42 } else run { x = 42 } x.inc() }   <v8>: *                 COPY
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 {
             while (getBoolean()) {
                 do {
@@ -117,7 +117,7 @@ break                                                                           
 x = 42                                                                                                                                                        !<v13>: *
 while (getBoolean()) { do { run { if (getBoolean()) { x = 42 } else { x = 43 } } break } while (getBoolean()) run { x.inc() } run { x = 42 } break } x = 42   !<v13>: *               COPY
 =====================
-== anonymous_2 ==
+== inlined anonymous_2 ==
 {
                         if (getBoolean()) {
                             x = 42
@@ -137,7 +137,7 @@ x = 43                                         !<v5>: *
 if (getBoolean()) { x = 42 } else { x = 43 }   <v6>: *         NEW: merge(if (getBoolean()) { x = 42 } else { x = 43 }|!<v3>, !<v5>) -> <v6>
 if (getBoolean()) { x = 42 } else { x = 43 }   <v6>: *         COPY
 =====================
-== anonymous_3 ==
+== inlined anonymous_3 ==
 { x.inc() }
 ---------------------
 x         <v0>: Int   NEW: r(x) -> <v0>
@@ -145,14 +145,14 @@ inc()     <v1>: Int   NEW: call(inc(), inc|<v0>) -> <v1>
 x.inc()   <v1>: Int   COPY
 x.inc()   <v1>: Int   COPY
 =====================
-== anonymous_4 ==
+== inlined anonymous_4 ==
 { x = 42 }
 ---------------------
 42       <v0>: Int   NEW: r(42) -> <v0>
 x = 42   !<v1>: *
 x = 42   !<v1>: *    COPY
 =====================
-== anonymous_5 ==
+== inlined anonymous_5 ==
 {
             x = 42
         }

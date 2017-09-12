@@ -777,6 +777,12 @@ public class DiagnosticsTestWithStdLibGenerated extends AbstractDiagnosticsTestW
                     doTest(fileName);
                 }
 
+                @TestMetadata("throwIfNotCalled.kt")
+                public void testThrowIfNotCalled() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/throwIfNotCalled.kt");
+                    doTest(fileName);
+                }
+
                 @TestMetadata("tryCatch.kt")
                 public void testTryCatch() throws Exception {
                     String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/tryCatch.kt");

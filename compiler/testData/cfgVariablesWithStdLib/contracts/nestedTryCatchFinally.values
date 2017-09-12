@@ -87,7 +87,7 @@ inc()                                                                           
 x.inc()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           <v10>: *                COPY
 { val x: Int try { myRun { try { x = innerComputation() } catch (e: java.lang.Exception) { log() } // possible reassignment if innerComputation finished x = 42 } // Definite reassignment here, cause can get here only if myRun finished x = outerComputation() } catch (e: java.lang.Exception) { // can catch exception thrown by the inner, so x can be not initalized log() } finally { // Possible reassignment (e.g. if everything finished) x = 42 } // Properly initialized x.inc() }   <v10>: *                COPY
 =====================
-== anonymous_1 ==
+== inlined anonymous_1 ==
 {
             try {
                 x = innerComputation()
@@ -148,7 +148,7 @@ inc()                                                                           
 x.inc()                                                                                                                                                                                                                                                                         <v8>: *                COPY
 { val x: Int try { myRun { try { innerComputation() } catch (e: java.lang.Exception) { log() } finally { x = 42 } } // Properly initialized x.inc() } catch (e: java.lang.Exception) { log() } // Still can be non-initialized (e.g. if x.inc() threw an exception) x.inc() }   <v8>: *                COPY
 =====================
-== anonymous_2 ==
+== inlined anonymous_2 ==
 {
             try {
                 innerComputation()

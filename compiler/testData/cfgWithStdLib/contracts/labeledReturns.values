@@ -6,29 +6,27 @@ inline fun <T, R> T.myLet(block: (T) -> R): R {
     return block(this)
 }
 ---------------------
-                                                                                       <v0>: {<: (T) -> R}   NEW: magic[FAKE_INITIALIZER](block: (T) -> R) -> <v0>
-contract                                                                               !<v2>: *
-{ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }                                   <v1>: *               NEW: r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>
-contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }                          <v3>: *               NEW: magic[UNRESOLVED_CALL](contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }|<v1>, !<v2>) -> <v3>
-block                                                                                  <v4>: {<: (T) -> R}   NEW: r(block) -> <v4>
-this                                                                                   <v5>: {<: T}          COPY
-this                                                                                   <v5>: {<: T}          NEW: r(this, <this>) -> <v5>
-block(this)                                                                            <v6>: {<: R}          NEW: call(block(this), invoke|<v4>, <v5>) -> <v6>
-return block(this)                                                                     !<v7>: *
-{ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } return block(this) }   !<v7>: *              COPY
+                                                                                       <v0>: {<: (T) -> R}                     NEW: magic[FAKE_INITIALIZER](block: (T) -> R) -> <v0>
+{ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }                                   <v1>: {<: ContractBuilder.() -> Unit}   NEW: r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>
+contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }                          <v2>: *                                 NEW: call(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }, contract|<v1>) -> <v2>
+block                                                                                  <v3>: {<: (T) -> R}                     NEW: r(block) -> <v3>
+this                                                                                   <v4>: {<: T}                            COPY
+this                                                                                   <v4>: {<: T}                            NEW: r(this, <this>) -> <v4>
+block(this)                                                                            <v5>: {<: R}                            NEW: call(block(this), invoke|<v3>, <v4>) -> <v5>
+return block(this)                                                                     !<v6>: *
+{ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } return block(this) }   !<v6>: *                                COPY
 =====================
 == anonymous_0 ==
 {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 ---------------------
-callsInPlace                                       !<v3>: *
-block                                              <v0>: *          NEW: r(block) -> <v0>
-InvocationKind                                     <v1>: *          NEW: magic[UNRESOLVED_CALL](InvocationKind) -> <v1>
-EXACTLY_ONCE                                       <v2>: *          NEW: r(EXACTLY_ONCE, <ERROR PROPERTY>|<v1>) -> <v2>
-InvocationKind.EXACTLY_ONCE                        <v2>: *          COPY
-callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v4>: {<: ???}   NEW: magic[UNRESOLVED_CALL](callsInPlace(block, InvocationKind.EXACTLY_ONCE)|<v0>, <v2>, !<v3>) -> <v4>
-callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v4>: {<: ???}   COPY
+                                                   <v0>: {<: ContractBuilder}   NEW: magic[IMPLICIT_RECEIVER](callsInPlace(block, InvocationKind.EXACTLY_ONCE)) -> <v0>
+block                                              <v1>: {<: Function<R>}       NEW: r(block) -> <v1>
+EXACTLY_ONCE                                       <v2>: {<: InvocationKind}    NEW: r(EXACTLY_ONCE) -> <v2>
+InvocationKind.EXACTLY_ONCE                        <v2>: {<: InvocationKind}    COPY
+callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v3>: *                      NEW: call(callsInPlace(block, InvocationKind.EXACTLY_ONCE), callsInPlace|<v0>, <v1>, <v2>) -> <v3>
+callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v3>: *                      COPY
 =====================
 == myRun ==
 inline fun myRun(block: () -> Unit) {
@@ -38,26 +36,24 @@ inline fun myRun(block: () -> Unit) {
     block()
 }
 ---------------------
-                                                                            <v0>: {<: () -> Unit}   NEW: magic[FAKE_INITIALIZER](block: () -> Unit) -> <v0>
-contract                                                                    !<v2>: *
-{ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }                        <v1>: *                 NEW: r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>
-contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }               <v3>: *                 NEW: magic[UNRESOLVED_CALL](contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }|<v1>, !<v2>) -> <v3>
-block                                                                       <v4>: {<: () -> Unit}   NEW: r(block) -> <v4>
-block()                                                                     <v5>: *                 NEW: call(block(), invoke|<v4>) -> <v5>
-{ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } block() }   <v5>: *                 COPY
+                                                                            <v0>: {<: () -> Unit}                   NEW: magic[FAKE_INITIALIZER](block: () -> Unit) -> <v0>
+{ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }                        <v1>: {<: ContractBuilder.() -> Unit}   NEW: r({ callsInPlace(block, InvocationKind.EXACTLY_ONCE) }) -> <v1>
+contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }               <v2>: *                                 NEW: call(contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }, contract|<v1>) -> <v2>
+block                                                                       <v3>: {<: () -> Unit}                   NEW: r(block) -> <v3>
+block()                                                                     <v4>: *                                 NEW: call(block(), invoke|<v3>) -> <v4>
+{ contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) } block() }   <v4>: *                                 COPY
 =====================
 == anonymous_1 ==
 {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 ---------------------
-callsInPlace                                       !<v3>: *
-block                                              <v0>: *          NEW: r(block) -> <v0>
-InvocationKind                                     <v1>: *          NEW: magic[UNRESOLVED_CALL](InvocationKind) -> <v1>
-EXACTLY_ONCE                                       <v2>: *          NEW: r(EXACTLY_ONCE, <ERROR PROPERTY>|<v1>) -> <v2>
-InvocationKind.EXACTLY_ONCE                        <v2>: *          COPY
-callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v4>: {<: ???}   NEW: magic[UNRESOLVED_CALL](callsInPlace(block, InvocationKind.EXACTLY_ONCE)|<v0>, <v2>, !<v3>) -> <v4>
-callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v4>: {<: ???}   COPY
+                                                   <v0>: {<: ContractBuilder}   NEW: magic[IMPLICIT_RECEIVER](callsInPlace(block, InvocationKind.EXACTLY_ONCE)) -> <v0>
+block                                              <v1>: {<: Function<Unit>}    NEW: r(block) -> <v1>
+EXACTLY_ONCE                                       <v2>: {<: InvocationKind}    NEW: r(EXACTLY_ONCE) -> <v2>
+InvocationKind.EXACTLY_ONCE                        <v2>: {<: InvocationKind}    COPY
+callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v3>: *                      NEW: call(callsInPlace(block, InvocationKind.EXACTLY_ONCE), callsInPlace|<v0>, <v1>, <v2>) -> <v3>
+callsInPlace(block, InvocationKind.EXACTLY_ONCE)   <v3>: *                      COPY
 =====================
 == unknownRun ==
 inline fun unknownRun(block: () -> Unit) = block()
@@ -106,7 +102,7 @@ y.inc()                                                                         
 return y.inc()                                                                                                                                                                                                                                                                                                                                                                                                                                                              !<v5>: *
 { // Inner always jumps to outer // And middle always calls inner // So, in fact, middle never finished normally // Hence 'y = 54' in middle is unreachable, and middle doesn't performs definite initalization // Hence, outer doesn't performs definite initialization val y: Int myRun outer@ { myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54 } return y.inc() }   !<v5>: *                COPY
 =====================
-== anonymous_2 ==
+== inlined anonymous_2 ==
 {
         myRun middle@ {
             x.myLet inner@ {
@@ -129,7 +125,7 @@ myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { re
 y = 54                                                                                                                                                !<v3>: *
 myRun middle@ { x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } } } // Possible to report unreachable here y = 54   !<v3>: *                COPY
 =====================
-== anonymous_3 ==
+== inlined anonymous_3 ==
 {
             x.myLet inner@ {
                 if (it == null) {
@@ -148,7 +144,7 @@ myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } 
 x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } }   !<v2>: *                       COPY
 x.myLet inner@ { if (it == null) { return@outer Unit } else { return@outer Unit } }   !<v2>: *                       COPY
 =====================
-== anonymous_4 ==
+== inlined anonymous_4 ==
 {
                 if (it == null) {
                     return@outer Unit

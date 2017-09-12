@@ -1,6 +1,6 @@
 // LANGUAGE_VERSION: 1.2
 
-import kotlin.effects.dsl.*
+import kotlin.internal.contracts.*
 
 inline fun <T, R> T.myLet(block: (T) -> R): R {
     contract {
