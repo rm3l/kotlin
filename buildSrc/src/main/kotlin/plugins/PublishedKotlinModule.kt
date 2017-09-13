@@ -12,7 +12,6 @@ import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.signing.Sign
 import org.gradle.plugins.signing.SigningExtension
 
-
 /**
  * Configures a Kotlin module for publication.
  *
@@ -119,6 +118,8 @@ open class PublishedKotlinModule : Plugin<Project> {
             val install = if (tasks.names.contains("install")) tasks.getByName("install") as Upload
                           else tasks.create("install", Upload::class.java)
             install.apply {
+                dependsOn(preparePublication)
+
                 configuration = project.configurations.getByName(Dependency.ARCHIVES_CONFIGURATION)
                 description = "Installs the 'archives' artifacts into the local Maven repository."
                 repositories {
