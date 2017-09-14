@@ -18,45 +18,44 @@ package org.jetbrains.kotlin.contracts.interpretation
 
 import org.jetbrains.kotlin.descriptors.contracts.ContractDescriptorVisitor
 import org.jetbrains.kotlin.descriptors.contracts.expressions.*
-import org.jetbrains.kotlin.contracts.factories.lift
 import org.jetbrains.kotlin.contracts.functors.AndFunctor
 import org.jetbrains.kotlin.contracts.functors.IsFunctor
 import org.jetbrains.kotlin.contracts.functors.NotFunctor
 import org.jetbrains.kotlin.contracts.functors.OrFunctor
 import org.jetbrains.kotlin.contracts.impls.*
-import org.jetbrains.kotlin.contracts.structure.ESBooleanExpression
+import org.jetbrains.kotlin.contracts.structure.ESExpression
 
-internal class ConditionInterpreter(private val dispatcher: ContractInterpretationDispatcher) : ContractDescriptorVisitor<ESBooleanExpression?, Unit> {
-    override fun visitLogicalOr(logicalOr: LogicalOr, data: Unit): ESBooleanExpression? {
+internal class ConditionInterpreter(private val dispatcher: ContractInterpretationDispatcher) : ContractDescriptorVisitor<ESExpression?, Unit> {
+    override fun visitLogicalOr(logicalOr: LogicalOr, data: Unit): ESExpression? {
         val left = logicalOr.left.accept(this, data) ?: return null
         val right = logicalOr.right.accept(this, data) ?: return null
         return ESOr(left, right, OrFunctor())
     }
 
-    override fun visitLogicalAnd(logicalAnd: LogicalAnd, data: Unit): ESBooleanExpression? {
+    override fun visitLogicalAnd(logicalAnd: LogicalAnd, data: Unit): ESExpression? {
         val left = logicalAnd.left.accept(this, data) ?: return null
         val right = logicalAnd.right.accept(this, data) ?: return null
         return ESAnd(left, right, AndFunctor())
     }
 
-    override fun visitLogicalNot(logicalNot: LogicalNot, data: Unit): ESBooleanExpression? {
+    override fun visitLogicalNot(logicalNot: LogicalNot, data: Unit): ESExpression? {
         val arg = logicalNot.arg.accept(this, data) ?: return null
         return ESNot(arg, NotFunctor())
     }
 
-    override fun visitIsInstancePredicate(isInstancePredicate: IsInstancePredicate, data: Unit): ESBooleanExpression? {
+    override fun visitIsInstancePredicate(isInstancePredicate: IsInstancePredicate, data: Unit): ESExpression? {
         val esVariable = dispatcher.interpretVariable(isInstancePredicate.arg) ?: return null
         return ESIs(esVariable, IsFunctor(isInstancePredicate.type, isInstancePredicate.isNegated))
     }
 
-    override fun visitIsNullPredicate(isNullPredicate: IsNullPredicate, data: Unit): ESBooleanExpression? {
+    override fun visitIsNullPredicate(isNullPredicate: IsNullPredicate, data: Unit): ESExpression? {
         val variable = dispatcher.interpretVariable(isNullPredicate.arg) ?: return null
-        return ESEqual(variable, null.lift(), isNullPredicate.isNegated, true)
+        return ESEqual(variable, ESConstant.NULL, isNullPredicate.isNegated)
     }
 
-    override fun visitBooleanConstantDescriptor(booleanConstantDescriptor: BooleanConstantDescriptor, data: Unit): ESBooleanExpression? =
-            dispatcher.interpretConstant(booleanConstantDescriptor) as ESBooleanConstant
+    override fun visitBooleanConstantDescriptor(booleanConstantDescriptor: BooleanConstantDescriptor, data: Unit): ESExpression? =
+            dispatcher.interpretConstant(booleanConstantDescriptor)
 
-    override fun visitBooleanVariableReference(booleanVariableReference: BooleanVariableReference, data: Unit): ESBooleanExpression? =
-            dispatcher.interpretVariable(booleanVariableReference) as ESBooleanVariable
+    override fun visitBooleanVariableReference(booleanVariableReference: BooleanVariableReference, data: Unit): ESExpression? =
+            dispatcher.interpretVariable(booleanVariableReference)
 }
