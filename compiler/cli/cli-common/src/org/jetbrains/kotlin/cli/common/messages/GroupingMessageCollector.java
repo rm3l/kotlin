@@ -72,9 +72,9 @@ public class GroupingMessageCollector implements MessageCollector {
     }
 
     public void flush() {
-        boolean hasErrors = hasExplicitErrors();
+        boolean hasExplicitErrors = hasExplicitErrors();
 
-        if (treatWarningsAsErrors && !hasErrors && hasWarnings()) {
+        if (treatWarningsAsErrors && !hasExplicitErrors && hasWarnings()) {
             report(CompilerMessageSeverity.ERROR, "warnings found and -Werror specified", null);
         }
 
@@ -82,7 +82,7 @@ public class GroupingMessageCollector implements MessageCollector {
                 CollectionsKt.sortedWith(groupedMessages.keySet(), Comparator.nullsFirst(CompilerMessageLocationComparator.INSTANCE));
         for (CompilerMessageLocation location : sortedKeys) {
             for (Message message : groupedMessages.get(location)) {
-                if (!hasErrors || message.severity.isError() || message.severity == CompilerMessageSeverity.STRONG_WARNING) {
+                if (!hasExplicitErrors || message.severity.isError() || message.severity == CompilerMessageSeverity.STRONG_WARNING) {
                     delegate.report(message.severity, message.message, message.location);
                 }
             }
