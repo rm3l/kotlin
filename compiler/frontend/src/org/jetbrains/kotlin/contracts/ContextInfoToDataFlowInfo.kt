@@ -18,50 +18,20 @@ package org.jetbrains.kotlin.contracts
 
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.config.LanguageVersionSettings
-import org.jetbrains.kotlin.contracts.structure.ESValue
 import org.jetbrains.kotlin.contracts.impls.ESConstant
-import org.jetbrains.kotlin.contracts.structure.ConstantID
-import org.jetbrains.kotlin.contracts.structure.NOT_NULL_ID
+import org.jetbrains.kotlin.contracts.impls.ESValue
 import org.jetbrains.kotlin.resolve.calls.smartcasts.*
 
 fun MutableContextInfo.toDataFlowInfo(languageVersionSettings: LanguageVersionSettings): DataFlowInfo {
     var resultDFI = DataFlowInfoFactory.EMPTY
 
     extractDataFlowStatements(equalValues) { leftDfv, rightValue ->
-        val id = rightValue.id
-        if (id == NOT_NULL_ID) {
-            resultDFI = resultDFI.disequate(leftDfv, DataFlowValue.nullValue(DefaultBuiltIns.Instance), languageVersionSettings)
-            return@extractDataFlowStatements
-        }
-
-        val rightDfv = when (id) {
-            is DataFlowValueID -> id.dfv
-            is ConstantID ->
-                if ((rightValue as ESConstant).value == null)
-                    DataFlowValue.nullValue(DefaultBuiltIns.Instance)
-                else
-                    DataFlowValue(IdentifierInfo.NO, rightValue.type)
-            else -> return@extractDataFlowStatements
-        }
+        val rightDfv = rightValue.toDataFlowValue() ?: return@extractDataFlowStatements
         resultDFI = resultDFI.equate(leftDfv, rightDfv, false, languageVersionSettings)
     }
 
     extractDataFlowStatements(notEqualValues) { leftDfv, rightValue ->
-        val id = rightValue.id
-        if (id == NOT_NULL_ID) {
-            resultDFI = resultDFI.equate(leftDfv, DataFlowValue.nullValue(DefaultBuiltIns.Instance), false, languageVersionSettings)
-            return@extractDataFlowStatements
-        }
-
-        val rightDfv = when (id) {
-            is DataFlowValueID -> id.dfv
-            is ConstantID ->
-                if ((rightValue as ESConstant).value == null)
-                    DataFlowValue.nullValue(DefaultBuiltIns.Instance)
-                else
-                    DataFlowValue(IdentifierInfo.NO, rightValue.type)
-            else -> return@extractDataFlowStatements
-        }
+        val rightDfv = rightValue.toDataFlowValue() ?: return@extractDataFlowStatements
         resultDFI = resultDFI.disequate(leftDfv, rightDfv, languageVersionSettings)
     }
 
@@ -73,8 +43,15 @@ fun MutableContextInfo.toDataFlowInfo(languageVersionSettings: LanguageVersionSe
 }
 
 private fun <D> extractDataFlowStatements(dictionary: Map<ESValue, Set<D>>, callback: (DataFlowValue, D) -> Unit) {
-    dictionary.forEach { key, setOfValues ->
-        val leftDfv = (key.id as? DataFlowValueID)?.dfv ?: return@forEach
+    for ((key, setOfValues) in dictionary) {
+        val leftDfv = key.toDataFlowValue() ?: continue
         setOfValues.forEach { callback(leftDfv, it) }
     }
+}
+
+private fun ESValue.toDataFlowValue(): DataFlowValue? = when (this) {
+    is ESDataFlowValue -> dataFlowValue
+    ESConstant.NULL -> DataFlowValue.nullValue(DefaultBuiltIns.Instance)
+    is ESConstant -> DataFlowValue(IdentifierInfo.NO, type)
+    else -> null
 }
