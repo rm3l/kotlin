@@ -398,6 +398,12 @@ public class CliTestGenerated extends AbstractCliTest {
             doJvmTest(fileName);
         }
 
+        @TestMetadata("werrorWithNoWarn.args")
+        public void testWerrorWithNoWarn() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cli/jvm/werrorWithNoWarn.args");
+            doJvmTest(fileName);
+        }
+
         @TestMetadata("werrorWithStrongWarning.args")
         public void testWerrorWithStrongWarning() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cli/jvm/werrorWithStrongWarning.args");
