@@ -16,16 +16,14 @@
 
 package org.jetbrains.kotlin.contracts.interpretation.effects
 
-import org.jetbrains.kotlin.descriptors.contracts.effects.ConditionalEffectDeclaration
 import org.jetbrains.kotlin.contracts.interpretation.ContractInterpretationDispatcher
-import org.jetbrains.kotlin.contracts.structure.ESBooleanExpression
 import org.jetbrains.kotlin.contracts.structure.ESClause
-import org.jetbrains.kotlin.contracts.structure.ESEffect
+import org.jetbrains.kotlin.descriptors.contracts.effects.ConditionalEffectDeclaration
 
 internal class ConditionalEffectInterpreter(private val dispatcher: ContractInterpretationDispatcher) {
     fun interpret(conditionalEffectDeclaration: ConditionalEffectDeclaration): ESClause? {
-        val effect: ESEffect = dispatcher.interpretEffect(conditionalEffectDeclaration.effect) ?: return null
-        val condition: ESBooleanExpression = dispatcher.interpretCondition(conditionalEffectDeclaration.condition) ?: return null
+        val effect = dispatcher.interpretEffect(conditionalEffectDeclaration.effect) ?: return null
+        val condition = dispatcher.interpretCondition(conditionalEffectDeclaration.condition) ?: return null
 
         return ESClause(condition, effect)
     }
