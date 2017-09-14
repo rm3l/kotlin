@@ -18,18 +18,16 @@ package org.jetbrains.kotlin.contracts.interpretation
 
 import org.jetbrains.kotlin.descriptors.contracts.expressions.BooleanConstantDescriptor
 import org.jetbrains.kotlin.descriptors.contracts.expressions.ConstantDescriptor
-import org.jetbrains.kotlin.contracts.factories.NOT_NULL_CONSTANT
-import org.jetbrains.kotlin.contracts.factories.UNKNOWN_CONSTANT
-import org.jetbrains.kotlin.contracts.factories.lift
 import org.jetbrains.kotlin.contracts.impls.ESConstant
+import org.jetbrains.kotlin.contracts.impls.lift
 
 internal class ConstantValuesInterpreter {
     fun interpretConstant(constantDescriptor: ConstantDescriptor): ESConstant? = when (constantDescriptor) {
         BooleanConstantDescriptor.TRUE -> true.lift()
         BooleanConstantDescriptor.FALSE -> false.lift()
-        ConstantDescriptor.NULL-> null.lift()
-        ConstantDescriptor.NOT_NULL -> NOT_NULL_CONSTANT
-        ConstantDescriptor.WILDCARD -> UNKNOWN_CONSTANT
+        ConstantDescriptor.NULL-> ESConstant.NULL
+        ConstantDescriptor.NOT_NULL -> ESConstant.NOT_NULL
+        ConstantDescriptor.WILDCARD -> ESConstant.WILDCARD
         else -> null
     }
 }
