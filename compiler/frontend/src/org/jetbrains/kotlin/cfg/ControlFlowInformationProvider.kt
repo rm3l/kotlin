@@ -381,9 +381,9 @@ class ControlFlowInformationProvider private constructor(
                     parentDeclaration = getElementParentDeclaration(parentDeclaration)
                 }
                 is KtDeclarationWithBody -> {
-                    // If it is captured write in lambda with statically known amount of invocations then just skip it (treat as parent)
+                    // If it is captured write in lambda that is called in-place, then skip it (treat as parent)
                     val maybeEnclosingLambdaExpr = parentDeclaration.parent
-                    if (maybeEnclosingLambdaExpr is KtLambdaExpression && trace[BindingContext.LAMBDA_INVOCATIONS, maybeEnclosingLambdaExpr] == InvocationKind.EXACTLY_ONCE) {
+                    if (maybeEnclosingLambdaExpr is KtLambdaExpression && trace[BindingContext.LAMBDA_INVOCATIONS, maybeEnclosingLambdaExpr] != null) {
                         parentDeclaration = getElementParentDeclaration(parentDeclaration)
                         continue@loop
                     }
