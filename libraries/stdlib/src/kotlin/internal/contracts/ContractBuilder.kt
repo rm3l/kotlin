@@ -29,4 +29,4 @@ interface ContractBuilder {
 
 @ContractsDSL
 @InlineOnly
-inline fun contract(builder: ContractBuilder.() -> Unit) = {}
+inline fun contract(builder: ContractBuilder.() -> Unit) { }

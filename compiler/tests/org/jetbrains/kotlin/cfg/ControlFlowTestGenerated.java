@@ -831,6 +831,18 @@ public class ControlFlowTestGenerated extends AbstractControlFlowTest {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgWithStdLib/contracts/nonReturningInlinedLambda.kt");
                 doTestWithStdLib(fileName);
             }
+
+            @TestMetadata("throwIfNotCalled.kt")
+            public void testThrowIfNotCalled() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgWithStdLib/contracts/throwIfNotCalled.kt");
+                doTestWithStdLib(fileName);
+            }
+
+            @TestMetadata("tryCatchFinally.kt")
+            public void testTryCatchFinally() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgWithStdLib/contracts/tryCatchFinally.kt");
+                doTestWithStdLib(fileName);
+            }
         }
     }
 }

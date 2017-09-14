@@ -30,8 +30,8 @@ import org.jetbrains.kotlin.cfg.pseudocode.PseudocodeImpl
 import org.jetbrains.kotlin.cfg.pseudocode.instructions.eval.AccessTarget
 import org.jetbrains.kotlin.cfg.pseudocode.instructions.eval.InstructionWithValue
 import org.jetbrains.kotlin.cfg.pseudocode.instructions.eval.MagicKind
-import org.jetbrains.kotlin.contracts.effects.canBeRevisited
-import org.jetbrains.kotlin.contracts.effects.isDefinitelyVisited
+import org.jetbrains.kotlin.descriptors.contracts.effects.canBeRevisited
+import org.jetbrains.kotlin.descriptors.contracts.effects.isDefinitelyVisited
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.contracts.effects.InvocationKind
 import org.jetbrains.kotlin.descriptors.impl.AnonymousFunctionDescriptor

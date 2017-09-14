@@ -16,32 +16,28 @@
 
 package org.jetbrains.kotlin.contracts.visitors
 
-import org.jetbrains.kotlin.contracts.MutableContextInfo
+import org.jetbrains.kotlin.builtins.DefaultBuiltIns
+import org.jetbrains.kotlin.contracts.model.MutableContextInfo
 import org.jetbrains.kotlin.contracts.impls.*
-import org.jetbrains.kotlin.contracts.structure.ESClause
-import org.jetbrains.kotlin.contracts.structure.ESEffect
-import org.jetbrains.kotlin.contracts.structure.EffectSchema
-import org.jetbrains.kotlin.contracts.factories.lift
-import org.jetbrains.kotlin.contracts.structure.ESExpressionVisitor
+import org.jetbrains.kotlin.contracts.model.ConditionalEffect
+import org.jetbrains.kotlin.contracts.model.ESEffect
+import org.jetbrains.kotlin.contracts.model.ESExpressionVisitor
 
 class InfoCollector(private val observedEffect: ESEffect) : ESExpressionVisitor<MutableContextInfo> {
     private var isInverted: Boolean = false
 
-    fun collectFromSchema(schema: EffectSchema): MutableContextInfo =
-            schema.clauses.mapNotNull { collectFromClause(it) }.fold(MutableContextInfo.EMPTY, { resultingInfo, clauseInfo -> resultingInfo.and(clauseInfo) })
+    fun collectFromSchema(schema: List<ESEffect>): MutableContextInfo =
+            schema.mapNotNull { collectFromEffect(it) }.fold(MutableContextInfo.EMPTY, { resultingInfo, clauseInfo -> resultingInfo.and(clauseInfo) })
 
-    private fun collectFromClause(clause: ESClause): MutableContextInfo? {
-        val premise = clause.condition
-
-        // Check for non-conditional effects
-        if (premise is ESBooleanConstant && premise.value) {
-            return MutableContextInfo.EMPTY.fire(clause.effect)
+    private fun collectFromEffect(effect: ESEffect): MutableContextInfo? {
+        if (effect !is ConditionalEffect) {
+            return MutableContextInfo.EMPTY.fire(effect)
         }
 
         // Check for information from conditional effects
-        return when (observedEffect.isImplies(clause.effect)) {
+        return when (observedEffect.isImplies(effect.simpleEffect)) {
             // observed effect implies clause's effect => clause's effect was fired => clause's condition is true
-            true -> clause.condition.accept(this)
+            true -> effect.condition.accept(this)
 
             // Observed effect *may* or *doesn't* implies clause's - no useful information
             null, false -> null
@@ -49,11 +45,11 @@ class InfoCollector(private val observedEffect: ESEffect) : ESExpressionVisitor<
     }
 
     override fun visitIs(isOperator: ESIs): MutableContextInfo = with(isOperator) {
-        if (isNegated != isInverted) MutableContextInfo.EMPTY.notSubtype(left, type) else MutableContextInfo.EMPTY.subtype(left, type)
+        if (functor.isNegated != isInverted) MutableContextInfo.EMPTY.notSubtype(left, type) else MutableContextInfo.EMPTY.subtype(left, type)
     }
 
     override fun visitEqual(equal: ESEqual): MutableContextInfo = with(equal) {
-        if (isNegated != isInverted) MutableContextInfo.EMPTY.notEqual(left, right) else MutableContextInfo.EMPTY.equal(left, right)
+        if (functor.isNegated != isInverted) MutableContextInfo.EMPTY.notEqual(left, right) else MutableContextInfo.EMPTY.equal(left, right)
     }
 
     override fun visitAnd(and: ESAnd): MutableContextInfo {
@@ -72,25 +68,14 @@ class InfoCollector(private val observedEffect: ESEffect) : ESExpressionVisitor<
     }
 
     override fun visitVariable(esVariable: ESVariable): MutableContextInfo {
-        throw IllegalStateException("InfoCollector shouldn't visit non-boolean values")
-    }
-
-    override fun visitBooleanVariable(esBooleanVariable: ESBooleanVariable): MutableContextInfo =
-            if (isInverted)
-                MutableContextInfo.EMPTY.equal(esBooleanVariable, false.lift())
-            else
-                MutableContextInfo.EMPTY.equal(esBooleanVariable, true.lift())
-
-    override fun visitBooleanConstant(esBooleanConstant: ESBooleanConstant): MutableContextInfo {
-        throw IllegalStateException("InfoCollector shouldn't visit constants")
+        return if (esVariable.type != DefaultBuiltIns.Instance.booleanType)
+            MutableContextInfo.EMPTY
+        else
+            MutableContextInfo.EMPTY.equal(esVariable, isInverted.not().lift())
     }
 
     override fun visitConstant(esConstant: ESConstant): MutableContextInfo {
         throw IllegalStateException("InfoCollector shouldn't visit constants")
-    }
-
-    override fun visitLambda(esLambda: ESLambda): MutableContextInfo {
-        throw IllegalStateException("InfoCollector shouldn't visit non-boolean values")
     }
 
     private fun <R> inverted(block: () -> R): R {

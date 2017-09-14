@@ -17,37 +17,36 @@
 package org.jetbrains.kotlin.contracts.impls
 
 import org.jetbrains.kotlin.contracts.functors.*
-import org.jetbrains.kotlin.contracts.structure.ESBooleanExpression
-import org.jetbrains.kotlin.contracts.structure.ESBooleanOperator
-import org.jetbrains.kotlin.contracts.structure.ESValue
-import org.jetbrains.kotlin.contracts.structure.ESExpressionVisitor
+import org.jetbrains.kotlin.contracts.model.ESExpression
+import org.jetbrains.kotlin.contracts.model.ESExpressionVisitor
+import org.jetbrains.kotlin.contracts.model.ESOperator
+import org.jetbrains.kotlin.contracts.model.ESValue
 
-class ESAnd(val left: ESBooleanExpression, val right: ESBooleanExpression, override val functor: AndFunctor): ESBooleanOperator {
+class ESAnd(val left: ESExpression, val right: ESExpression): ESOperator {
+    override val functor: AndFunctor = AndFunctor()
     override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitAnd(this)
 }
 
-class ESOr(val left: ESBooleanExpression, val right: ESBooleanExpression, override val functor: OrFunctor): ESBooleanOperator {
+class ESOr(val left: ESExpression, val right: ESExpression): ESOperator {
+    override val functor: OrFunctor = OrFunctor()
     override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitOr(this)
 }
 
-class ESNot(val arg: ESBooleanExpression, override val functor: NotFunctor): ESBooleanOperator {
+class ESNot(val arg: ESExpression): ESOperator {
+    override val functor = NotFunctor()
     override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitNot(this)
 
 }
 
-class ESIs(val left: ESValue, override val functor: IsFunctor): ESBooleanOperator {
+class ESIs(val left: ESValue, override val functor: IsFunctor): ESOperator {
     val type = functor.type
-    val isNegated = functor.isNegated
-
     override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitIs(this)
-
 }
 
-class ESEqual(val left: ESValue, val right: ESConstant, override val functor: EqualsToConstantFunctor): ESBooleanOperator {
-    constructor(left: ESValue, right: ESConstant, isNegated: Boolean, binaryTypeComparison: Boolean)
-            : this(left, right, EqualsToConstantFunctor(isNegated, right, binaryTypeComparison))
-
-    val isNegated = functor.isNegated
-
+class ESEqual(val left: ESValue, val right: ESValue, isNegated: Boolean): ESOperator {
+    override val functor: EqualsFunctor = EqualsFunctor(isNegated)
     override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitEqual(this)
 }
+
+fun ESExpression.and(other: ESExpression?): ESExpression = if (other == null) this else ESAnd(this, other)
+fun ESExpression.or(other: ESExpression?): ESExpression = if (other == null) this else ESOr(this, other)

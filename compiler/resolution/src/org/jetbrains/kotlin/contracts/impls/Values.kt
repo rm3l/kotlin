@@ -17,60 +17,61 @@
 package org.jetbrains.kotlin.contracts.impls
 
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
-import org.jetbrains.kotlin.contracts.structure.ESValueID
-import org.jetbrains.kotlin.contracts.structure.ESBooleanValue
-import org.jetbrains.kotlin.contracts.structure.ESValue
-import org.jetbrains.kotlin.contracts.structure.ESExpressionVisitor
+import org.jetbrains.kotlin.contracts.model.ESExpressionVisitor
+import org.jetbrains.kotlin.contracts.model.ESValue
+import org.jetbrains.kotlin.descriptors.ValueDescriptor
+import org.jetbrains.kotlin.descriptors.contracts.expressions.BooleanConstantDescriptor
+import org.jetbrains.kotlin.descriptors.contracts.expressions.ConstantDescriptor
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.typeUtil.makeNullable
+import java.util.*
 
-open class ESVariable(override val id: ESValueID, val type: KotlinType) : ESValue {
+open class ESVariable(val descriptor: ValueDescriptor) : ESValue(descriptor.type) {
     override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitVariable(this)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
 
         other as ESVariable
 
-        if (id != other.id) return false
+        if (descriptor != other.descriptor) return false
 
         return true
     }
 
-    override fun hashCode(): Int = id.hashCode()
+    override fun hashCode(): Int = descriptor.hashCode()
 
-    override fun toString(): String = id.toString()
+    override fun toString(): String = descriptor.toString()
 }
 
-class ESBooleanVariable(id: ESValueID) : ESVariable(id, DefaultBuiltIns.Instance.booleanType), ESBooleanValue {
-    override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitBooleanVariable(this)
-}
-
-class ESLambda(id: ESValueID, type: KotlinType) : ESVariable(id, type) {
-    override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitLambda(this)
-}
-
-open class ESConstant(override val id: ESValueID, open val value: Any?, val type: KotlinType) : ESValue {
+open class ESConstant private constructor(open val constantDescriptor: ConstantDescriptor, override val type: KotlinType) : ESValue(type) {
     override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitConstant(this)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other?.javaClass != javaClass) return false
 
         other as ESConstant
 
-        if (id != other.id) return false
+        if (constantDescriptor != other.constantDescriptor) return false
 
         return true
     }
 
-    override fun hashCode(): Int = id.hashCode()
+    override fun hashCode(): Int = Objects.hashCode(constantDescriptor)
 
-    override fun toString(): String = id.toString()
+    override fun toString(): String = constantDescriptor.name
+
+    companion object {
+        val TRUE = ESConstant(BooleanConstantDescriptor.TRUE, DefaultBuiltIns.Instance.booleanType)
+        val FALSE = ESConstant(BooleanConstantDescriptor.FALSE, DefaultBuiltIns.Instance.booleanType)
+        val NULL = ESConstant(ConstantDescriptor.NULL, DefaultBuiltIns.Instance.nothingType.makeNullable())
+        val NOT_NULL = ESConstant(ConstantDescriptor.NOT_NULL, DefaultBuiltIns.Instance.anyType)
+        val WILDCARD = ESConstant(ConstantDescriptor.WILDCARD, DefaultBuiltIns.Instance.anyType.makeNullable())
+    }
+
+    fun isNullConstant(): Boolean = this == NULL || this == NOT_NULL
 }
 
-class ESBooleanConstant(id: ESValueID, override val value: Boolean) : ESConstant(id, value, DefaultBuiltIns.Instance.booleanType), ESBooleanValue {
-    override fun <T> accept(visitor: ESExpressionVisitor<T>): T = visitor.visitBooleanConstant(this)
-}
-
-
-
-
+fun Boolean.lift(): ESConstant = if (this) ESConstant.TRUE else ESConstant.FALSE

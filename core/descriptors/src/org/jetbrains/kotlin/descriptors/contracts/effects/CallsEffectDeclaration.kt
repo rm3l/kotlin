@@ -31,3 +31,6 @@ enum class InvocationKind {
     AT_LEAST_ONCE,
     UNKNOWN
 }
+
+fun InvocationKind.isDefinitelyVisited(): Boolean = this == InvocationKind.EXACTLY_ONCE || this == InvocationKind.AT_LEAST_ONCE
+fun InvocationKind.canBeRevisited(): Boolean = this == InvocationKind.UNKNOWN || this == InvocationKind.AT_LEAST_ONCE

@@ -16,33 +16,21 @@
 
 package org.jetbrains.kotlin.contracts.effects
 
-import org.jetbrains.kotlin.contracts.factories.UNKNOWN_CONSTANT
-import org.jetbrains.kotlin.contracts.structure.ESEffect
-import org.jetbrains.kotlin.contracts.structure.ESValue
 import org.jetbrains.kotlin.contracts.impls.ESConstant
-import org.jetbrains.kotlin.contracts.impls.ESVariable
+import org.jetbrains.kotlin.contracts.model.ESValue
+import org.jetbrains.kotlin.contracts.model.ESEffect
+import org.jetbrains.kotlin.contracts.model.SimpleEffect
+import org.jetbrains.kotlin.descriptors.contracts.expressions.ConstantDescriptor
 
-data class ESReturns(val value: ESValue): ESEffect {
+data class ESReturns(val value: ESValue): SimpleEffect() {
     override fun isImplies(other: ESEffect): Boolean? {
-        if (other is ESThrows) return false
-
         if (other !is ESReturns) return null
 
+        if (this.value !is ESConstant || other.value !is ESConstant) return this.value == other.value
+
         // ESReturns(x) implies ESReturns(?) for any 'x'
-        if (other.value == UNKNOWN_CONSTANT) return true
+        if (other.value.constantDescriptor == ConstantDescriptor.WILDCARD) return true
 
-        if (value is ESVariable || other.value is ESVariable) {
-            // If at least one of values is Variable, then `this` definitely
-            // implies `other` iff they are one and the same Variable, i.e.
-            // their id's are equal.
-            // Otherwise, result is unknown
-            return if (value.id == other.value.id) true else null
-        }
-
-        // If neither of values are Variable, then both should be Constant - compare them by ids
-        assert(value is ESConstant && other.value is ESConstant) {
-            "ESValue which isn't ESVariable should be ESConstant, got $value and ${other.value}"
-        }
-        return value.id == other.value.id
+        return value == other.value
     }
 }

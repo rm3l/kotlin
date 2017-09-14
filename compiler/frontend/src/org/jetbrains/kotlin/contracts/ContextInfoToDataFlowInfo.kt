@@ -19,7 +19,8 @@ package org.jetbrains.kotlin.contracts
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.config.LanguageVersionSettings
 import org.jetbrains.kotlin.contracts.impls.ESConstant
-import org.jetbrains.kotlin.contracts.impls.ESValue
+import org.jetbrains.kotlin.contracts.model.ESValue
+import org.jetbrains.kotlin.contracts.model.MutableContextInfo
 import org.jetbrains.kotlin.resolve.calls.smartcasts.*
 
 fun MutableContextInfo.toDataFlowInfo(languageVersionSettings: LanguageVersionSettings): DataFlowInfo {

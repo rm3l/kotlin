@@ -274,6 +274,12 @@ public class DataFlowTestGenerated extends AbstractDataFlowTest {
                 doTestWithStdLib(fileName);
             }
 
+            @TestMetadata("irrelevantUnknownClosure.kt")
+            public void testIrrelevantUnknownClosure() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/irrelevantUnknownClosure.kt");
+                doTestWithStdLib(fileName);
+            }
+
             @TestMetadata("nestedTryCatchFinally.kt")
             public void testNestedTryCatchFinally() throws Exception {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/nestedTryCatchFinally.kt");
@@ -289,6 +295,12 @@ public class DataFlowTestGenerated extends AbstractDataFlowTest {
             @TestMetadata("nonReturningInlinedLambda.kt")
             public void testNonReturningInlinedLambda() throws Exception {
                 String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/nonReturningInlinedLambda.kt");
+                doTestWithStdLib(fileName);
+            }
+
+            @TestMetadata("throwIfNotCalled.kt")
+            public void testThrowIfNotCalled() throws Exception {
+                String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/cfgVariablesWithStdLib/contracts/throwIfNotCalled.kt");
                 doTestWithStdLib(fileName);
             }
 

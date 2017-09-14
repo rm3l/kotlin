@@ -95,7 +95,7 @@ fun branchedAndNestedWithNativeOperators(x: Any?, y: Any?) {
             (1 == 2 || y is Int || isString(y))
     )
     <!DEBUG_INFO_SMARTCAST!>x<!>.length
-    <!DEBUG_INFO_SMARTCAST!>y<!>.length
-    <!DEBUG_INFO_SMARTCAST!>y<!>.inc()
+    y.<!UNRESOLVED_REFERENCE!>length<!>
+    y.<!UNRESOLVED_REFERENCE!>inc<!>()
 }
 

@@ -54,6 +54,7 @@ import org.jetbrains.kotlin.types.ErrorUtils
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
+import org.jetbrains.kotlin.types.expressions.ExpressionTypingServices
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingUtils
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingUtils.isFunctionExpression
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingUtils.isFunctionLiteral
@@ -67,8 +68,8 @@ class FunctionDescriptorResolver(
         private val builtIns: KotlinBuiltIns,
         private val modifiersChecker: ModifiersChecker,
         private val overloadChecker: OverloadChecker,
-        private val bodyResolver: BodyResolver,
-        private val contractParsingServices: ContractParsingServices
+        private val contractParsingServices: ContractParsingServices,
+        private val expressionTypingServices: ExpressionTypingServices
 ) {
     fun resolveFunctionDescriptor(
             containingDescriptor: DeclarationDescriptor,
@@ -174,7 +175,7 @@ class FunctionDescriptorResolver(
         val modality = resolveMemberModalityFromModifiers(function, getDefaultModality(containingDescriptor, visibility, function.hasBody()),
                                                           trace.bindingContext, containingDescriptor)
         val contractProvider = if (contractParsingServices.fastCheckIfContractPresent(function)) {
-            LazyContractProvider(functionDescriptor) { bodyResolver.resolveFunctionBody(dataFlowInfo, trace, function, functionDescriptor, scope) }
+            LazyContractProvider(functionDescriptor) { expressionTypingServices.getBodyExpressionType(trace, scope, dataFlowInfo, function, functionDescriptor) }
         } else {
             LazyContractProvider.createInitialized(functionDescriptor, null)
         }

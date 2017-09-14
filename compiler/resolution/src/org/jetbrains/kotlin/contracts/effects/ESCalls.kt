@@ -16,19 +16,18 @@
 
 package org.jetbrains.kotlin.contracts.effects
 
+import org.jetbrains.kotlin.contracts.model.ESValue
+import org.jetbrains.kotlin.contracts.model.ESEffect
+import org.jetbrains.kotlin.contracts.model.SimpleEffect
 import org.jetbrains.kotlin.descriptors.contracts.effects.InvocationKind
-import org.jetbrains.kotlin.contracts.structure.ESEffect
-import org.jetbrains.kotlin.contracts.impls.ESVariable
 
-data class ESCalls(val callable: ESVariable, val kind: InvocationKind): ESEffect {
+data class ESCalls(val callable: ESValue, val kind: InvocationKind): SimpleEffect() {
     override fun isImplies(other: ESEffect): Boolean? {
         if (other !is ESCalls) return null
 
-        if (callable.id != other.callable.id) return null
+        if (callable != other.callable) return null
 
         return kind == other.kind
     }
 
 }
-fun InvocationKind.isDefinitelyVisited(): Boolean = this == InvocationKind.EXACTLY_ONCE || this == InvocationKind.AT_LEAST_ONCE
-fun InvocationKind.canBeRevisited(): Boolean = this == InvocationKind.UNKNOWN || this == InvocationKind.AT_LEAST_ONCE

@@ -741,6 +741,12 @@ public class DiagnosticsTestWithStdLibGenerated extends AbstractDiagnosticsTestW
                     KotlinTestUtils.assertAllTestsPresentByMetadata(this.getClass(), new File("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining"), Pattern.compile("^(.+)\\.kt$"), TargetBackend.ANY, true);
                 }
 
+                @TestMetadata("breakContinuesInInlinedLambda.kt")
+                public void testBreakContinuesInInlinedLambda() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/breakContinuesInInlinedLambda.kt");
+                    doTest(fileName);
+                }
+
                 @TestMetadata("expressionBody.kt")
                 public void testExpressionBody() throws Exception {
                     String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/expressionBody.kt");
@@ -753,9 +759,33 @@ public class DiagnosticsTestWithStdLibGenerated extends AbstractDiagnosticsTestW
                     doTest(fileName);
                 }
 
+                @TestMetadata("inlinedLambdaAlwaysThrows.kt")
+                public void testInlinedLambdaAlwaysThrows() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/inlinedLambdaAlwaysThrows.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("irrelevantUnknownClosure.kt")
+                public void testIrrelevantUnknownClosure() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/irrelevantUnknownClosure.kt");
+                    doTest(fileName);
+                }
+
                 @TestMetadata("labeledReturns.kt")
                 public void testLabeledReturns() throws Exception {
                     String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/labeledReturns.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("nestedTryCatchFinally.kt")
+                public void testNestedTryCatchFinally() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/nestedTryCatchFinally.kt");
+                    doTest(fileName);
+                }
+
+                @TestMetadata("nestedTryCatchs.kt")
+                public void testNestedTryCatchs() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/testsWithStdLib/contracts/controlflow/flowInlining/nestedTryCatchs.kt");
                     doTest(fileName);
                 }
 

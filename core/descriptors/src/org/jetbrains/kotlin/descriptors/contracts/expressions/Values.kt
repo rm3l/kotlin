@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.descriptors.contracts.BooleanExpression
 import org.jetbrains.kotlin.descriptors.contracts.ContractDescriptionElement
 import org.jetbrains.kotlin.descriptors.contracts.ContractDescriptorVisitor
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.typeUtil.makeNullable
 
 
 interface ContractDescriptionValue : ContractDescriptionElement {
@@ -36,7 +37,7 @@ open class ConstantDescriptor(val type: KotlinType, val name: String) : Contract
     companion object {
         val NULL = ConstantDescriptor(DefaultBuiltIns.Instance.nullableAnyType, "NULL")
         val WILDCARD = ConstantDescriptor(DefaultBuiltIns.Instance.nullableAnyType, "WILDCARD")
-        val NOT_NULL = ConstantDescriptor(DefaultBuiltIns.Instance.anyType, "NOT_NULL")
+        val NOT_NULL = ConstantDescriptor(DefaultBuiltIns.Instance.nothingType.makeNullable(), "NOT_NULL")
     }
 }
 

@@ -17,23 +17,34 @@
 package org.jetbrains.kotlin.contracts.functors
 
 import org.jetbrains.kotlin.contracts.effects.ESReturns
-import org.jetbrains.kotlin.contracts.factories.createClause
-import org.jetbrains.kotlin.contracts.factories.lift
-import org.jetbrains.kotlin.contracts.impls.ESIs
-import org.jetbrains.kotlin.contracts.impls.and
-import org.jetbrains.kotlin.contracts.structure.ESClause
+import org.jetbrains.kotlin.contracts.impls.*
+import org.jetbrains.kotlin.contracts.model.*
 import org.jetbrains.kotlin.types.KotlinType
 
-class IsFunctor(val type: KotlinType, val isNegated: Boolean) : AbstractSequentialUnaryFunctor() {
-    override fun combineClauses(list: List<ESClause>): List<ESClause> = list.flatMap {
-        // Cast to ESReturns should succeed as per AbstractSequentialUnaryFunctor contract
-        val outcome = it.effect as ESReturns
-        val premise = it.condition
-
-        val trueResult = createClause(premise.and(ESIs(outcome.value, this)), ESReturns(true.lift()))
-        val falseResult = createClause(premise.and(ESIs(outcome.value, negated())), ESReturns(false.lift()))
-        return listOf(trueResult, falseResult)
+class IsFunctor(val type: KotlinType, val isNegated: Boolean) : AbstractReducingFunctor() {
+    override fun doInvocation(arguments: List<Computation>): List<ESEffect> {
+        assert(arguments.size == 1, { "Wrong size of arguments list for Unary operator: expected 1, got ${arguments.size}" })
+        return invokeWithArguments(arguments[0])
     }
 
-    fun negated(): IsFunctor = IsFunctor(type, isNegated.not())
+    fun invokeWithArguments(arg: Computation): List<ESEffect> {
+        return if (arg is ESValue)
+            invokeWithValue(arg, null)
+        else
+            arg.effects.flatMap {
+                if (it !is ConditionalEffect || it.simpleEffect !is ESReturns || it.simpleEffect.value == ESConstant.WILDCARD)
+                    listOf(it)
+                else
+                    invokeWithValue(it.simpleEffect.value, it.condition)
+            }
+    }
+
+    private fun invokeWithValue(value: ESValue, additionalCondition: ESExpression?): List<ConditionalEffect> {
+        val trueIs = ESIs(value, this)
+        val falseIs = ESIs(value, IsFunctor(type, isNegated.not()))
+
+        val trueResult = ConditionalEffect(trueIs.and(additionalCondition), ESReturns(true.lift()))
+        val falseResult = ConditionalEffect(falseIs.and(additionalCondition), ESReturns(false.lift()))
+        return listOf(trueResult, falseResult)
+    }
 }

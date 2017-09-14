@@ -22,21 +22,21 @@ import org.jetbrains.kotlin.contracts.effects.ESCalls
 import org.jetbrains.kotlin.contracts.effects.ESReturns
 import org.jetbrains.kotlin.contracts.functors.EqualsFunctor
 import org.jetbrains.kotlin.contracts.impls.ESConstant
+import org.jetbrains.kotlin.contracts.impls.UNKNOWN_COMPUTATION
 import org.jetbrains.kotlin.contracts.impls.lift
-import org.jetbrains.kotlin.contracts.structure.ESEffect
-import org.jetbrains.kotlin.contracts.structure.calltree.Computation
+import org.jetbrains.kotlin.contracts.model.ESEffect
+import org.jetbrains.kotlin.contracts.model.Computation
+import org.jetbrains.kotlin.contracts.model.MutableContextInfo
 import org.jetbrains.kotlin.contracts.visitors.InfoCollector
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.psi.KtLambdaExpression
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.BindingTrace
 import org.jetbrains.kotlin.resolve.calls.model.ResolvedCall
 import org.jetbrains.kotlin.resolve.calls.smartcasts.ConditionalDataFlowInfo
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
-import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 
 class EffectSystem(val languageVersionSettings: LanguageVersionSettings) {
 
@@ -64,10 +64,10 @@ class EffectSystem(val languageVersionSettings: LanguageVersionSettings) {
     ): ConditionalDataFlowInfo {
         if (leftExpression == null || rightExpression == null) return ConditionalDataFlowInfo.EMPTY
 
-        val leftComputation = getComputation(leftExpression, bindingTrace, moduleDescriptor) ?: return ConditionalDataFlowInfo.EMPTY
-        val rightComputation = getComputation(rightExpression, bindingTrace, moduleDescriptor) ?: return ConditionalDataFlowInfo.EMPTY
+        val leftComputation = getNonTrivialComputation(leftExpression, bindingTrace, moduleDescriptor) ?: return ConditionalDataFlowInfo.EMPTY
+        val rightComputation = getNonTrivialComputation(rightExpression, bindingTrace, moduleDescriptor) ?: return ConditionalDataFlowInfo.EMPTY
 
-        val effects = EqualsFunctor(false).apply(leftComputation, rightComputation)
+        val effects = EqualsFunctor(false).invokeWithArguments(leftComputation, rightComputation)
 
         val equalsContextInfo = InfoCollector(ESReturns(true.lift())).collectFromSchema(effects)
         val notEqualsContextInfo = InfoCollector(ESReturns(false.lift())).collectFromSchema(effects)
@@ -112,18 +112,12 @@ class EffectSystem(val languageVersionSettings: LanguageVersionSettings) {
             bindingTrace: BindingTrace,
             moduleDescriptor: ModuleDescriptor
     ): MutableContextInfo {
-        val computation = getComputation(expression, bindingTrace, moduleDescriptor) ?: return MutableContextInfo.EMPTY
-
+        val computation = getNonTrivialComputation(expression, bindingTrace, moduleDescriptor) ?: return MutableContextInfo.EMPTY
         return InfoCollector(observedEffect).collectFromSchema(computation.effects)
     }
 
-    private fun getComputation(expression: KtExpression, trace: BindingTrace, moduleDescriptor: ModuleDescriptor): Computation? {
-        val cachedValue = trace[BindingContext.EXPRESSION_EFFECTS, expression]
-        if (cachedValue != null) return cachedValue
-
-        val builder = CallTreeBuilder(trace.bindingContext, moduleDescriptor)
-        val computation = expression.accept(builder, Unit)
-        trace.record(BindingContext.EXPRESSION_EFFECTS, expression, computation)
-        return computation
+    private fun getNonTrivialComputation(expression: KtExpression, trace: BindingTrace, moduleDescriptor: ModuleDescriptor): Computation? {
+        val computation = EffectsExtractingVisitor(trace, moduleDescriptor).extractOrGetCached(expression)
+        return if (computation == UNKNOWN_COMPUTATION) null else computation
     }
 }

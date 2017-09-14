@@ -31,7 +31,6 @@ class LazyContractProvider(private val ownerFunction: FunctionDescriptor, privat
 
 
     fun getContractDescriptor(): ContractDescriptor? = when (state) {
-
         LazyContractProvider.ComputationState.NOT_PROCESSED -> {
             state = ComputationState.IN_PROCESS
             computation.invoke() // should initialize contractDescriptor
