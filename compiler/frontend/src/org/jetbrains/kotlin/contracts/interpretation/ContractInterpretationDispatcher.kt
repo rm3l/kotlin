@@ -16,7 +16,18 @@
 
 package org.jetbrains.kotlin.contracts.interpretation
 
-import org.jetbrains.kotlin.contracts.ValueIdsFactory
+import org.jetbrains.kotlin.contracts.factories.createClause
+import org.jetbrains.kotlin.contracts.functors.SubstitutingFunctor
+import org.jetbrains.kotlin.contracts.impls.ESConstant
+import org.jetbrains.kotlin.contracts.impls.ESVariable
+import org.jetbrains.kotlin.contracts.impls.lift
+import org.jetbrains.kotlin.contracts.interpretation.effects.CallsEffectInterpreter
+import org.jetbrains.kotlin.contracts.interpretation.effects.ConditionalEffectInterpreter
+import org.jetbrains.kotlin.contracts.interpretation.effects.ReturnsEffectInterpreter
+import org.jetbrains.kotlin.contracts.structure.ESEffect
+import org.jetbrains.kotlin.contracts.structure.ESExpression
+import org.jetbrains.kotlin.contracts.structure.ESFunctor
+import org.jetbrains.kotlin.contracts.structure.EffectSchema
 import org.jetbrains.kotlin.descriptors.ReceiverParameterDescriptor
 import org.jetbrains.kotlin.descriptors.ValueDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
@@ -26,15 +37,6 @@ import org.jetbrains.kotlin.descriptors.contracts.EffectDeclaration
 import org.jetbrains.kotlin.descriptors.contracts.effects.ConditionalEffectDeclaration
 import org.jetbrains.kotlin.descriptors.contracts.expressions.ConstantDescriptor
 import org.jetbrains.kotlin.descriptors.contracts.expressions.VariableReference
-import org.jetbrains.kotlin.contracts.factories.*
-import org.jetbrains.kotlin.contracts.impls.ESConstant
-import org.jetbrains.kotlin.contracts.impls.ESVariable
-import org.jetbrains.kotlin.contracts.interpretation.effects.CallsEffectInterpreter
-import org.jetbrains.kotlin.contracts.interpretation.effects.ConditionalEffectInterpreter
-import org.jetbrains.kotlin.contracts.interpretation.effects.ReturnsEffectInterpreter
-import org.jetbrains.kotlin.contracts.structure.ESBooleanExpression
-import org.jetbrains.kotlin.contracts.structure.ESEffect
-import org.jetbrains.kotlin.contracts.structure.ESFunctor
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValue
 import org.jetbrains.kotlin.resolve.calls.smartcasts.IdentifierInfo
 
@@ -52,11 +54,6 @@ class ContractInterpretationDispatcher {
     )
 
     fun convertContractDescriptorToFunctor(contractDescriptor: ContractDescriptor): ESFunctor? {
-        // TODO: rewrite when we will get rid of clauses
-        val ownerFunction = contractDescriptor.ownerFunction
-        val receiver = listOfNotNull(ownerFunction.dispatchReceiverParameter?.toESVariable(), ownerFunction.extensionReceiverParameter?.toESVariable())
-        val parameters = receiver + ownerFunction.valueParameters.map { it.toESVariable() ?: return null }
-
         val resultingClauses = contractDescriptor.effects.map { effect ->
             if (effect is ConditionalEffectDeclaration) {
                 conditionalEffectInterpreter.interpret(effect) ?: return null
@@ -66,7 +63,7 @@ class ContractInterpretationDispatcher {
             }
         }
 
-        return schemaFromClauses(resultingClauses, parameters)
+        return SubstitutingFunctor(EffectSchema(resultingClauses), contractDescriptor.ownerFunction)
     }
 
     internal fun interpretEffect(effectDeclaration: EffectDeclaration): ESEffect? {
@@ -77,19 +74,8 @@ class ContractInterpretationDispatcher {
     internal fun interpretConstant(constantDescriptor: ConstantDescriptor): ESConstant? =
             constantsInterpreter.interpretConstant(constantDescriptor)
 
-    internal fun interpretCondition(booleanExpression: BooleanExpression): ESBooleanExpression? =
+    internal fun interpretCondition(booleanExpression: BooleanExpression): ESExpression? =
             booleanExpression.accept(conditionInterpreter, Unit)
 
-    internal fun interpretVariable(variableReference: VariableReference): ESVariable? = variableReference.descriptor.toESVariable()
-
-    private fun ValueDescriptor.toESVariable(): ESVariable? {
-        // TODO: hack - it is not necessarily stable value, but we will never use its stability, so we don't really care
-        val identifierInfo = when(this) {
-            is VariableDescriptor -> IdentifierInfo.Variable (this, DataFlowValue.Kind.STABLE_VALUE, null)
-            is ReceiverParameterDescriptor -> IdentifierInfo.Receiver(this.value)
-            else -> return null
-        }
-        val dfv = DataFlowValue(identifierInfo, this.type)
-        return createVariable(ValueIdsFactory.dfvBased(dfv), this.type)
-    }
+    internal fun interpretVariable(variableReference: VariableReference): ESVariable? = ESVariable(variableReference.descriptor)
 }
