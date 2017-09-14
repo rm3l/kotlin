@@ -51,6 +51,7 @@ dependencies {
     compile(ideaUltimatePluginDeps("*.jar", plugin = "junit"))
     compile(ideaUltimatePluginDeps("*.jar", plugin = "uml"))
     compile(ideaUltimatePluginDeps("*.jar", plugin = "JavaScriptLanguage"))
+    compile(ideaUltimatePluginDeps("*.jar", plugin = "JavaScriptDebugger"))
 
     testCompile(projectDist(":kotlin-test:kotlin-test-jvm"))
     testCompile(project(":compiler.tests-common")) { isTransitive = false }
@@ -113,7 +114,10 @@ val ultimatePluginXmlContent: String by lazy {
 
 val prepareResources by task<Copy> {
     dependsOn(":idea:assemble")
-    from(ideaProjectResources, { exclude("META-INF/plugin.xml") })
+    from(ideaProjectResources, {
+        include("META-INF/**")
+        exclude("META-INF/plugin.xml")
+    })
     into(preparedResources)
 }
 
